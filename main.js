@@ -4994,6 +4994,8 @@ var elm$html$Html$label = _VirtualDom_node('label');
 var elm$html$Html$legend = _VirtualDom_node('legend');
 var elm$html$Html$select = _VirtualDom_node('select');
 var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
+var elm$html$Html$Attributes$max = elm$html$Html$Attributes$stringProperty('max');
+var elm$html$Html$Attributes$min = elm$html$Html$Attributes$stringProperty('min');
 var elm$html$Html$Attributes$multiple = elm$html$Html$Attributes$boolProperty('multiple');
 var elm$html$Html$Attributes$required = elm$html$Html$Attributes$boolProperty('required');
 var elm$html$Html$Attributes$size = function (n) {
@@ -5068,6 +5070,8 @@ var author$project$Chargen$view = function (model) {
 																elm$html$Html$Attributes$type_('number'),
 																elm$html$Html$Attributes$value(
 																elm$core$String$fromInt(data.minLevel)),
+																elm$html$Html$Attributes$min('1'),
+																elm$html$Html$Attributes$max('100'),
 																elm$html$Html$Attributes$size(2)
 															]),
 														_List_Nil)
@@ -5086,6 +5090,8 @@ var author$project$Chargen$view = function (model) {
 																elm$html$Html$Attributes$type_('number'),
 																elm$html$Html$Attributes$value(
 																elm$core$String$fromInt(data.maxLevel)),
+																elm$html$Html$Attributes$min('1'),
+																elm$html$Html$Attributes$max('100'),
 																elm$html$Html$Attributes$size(2)
 															]),
 														_List_Nil)
