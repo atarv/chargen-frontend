@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Chargen</title>
+		<script src="main.js"></script>
+		<link rel="stylesheet" href="style.css">
+        <link
+            rel="stylesheet"
+            href="https://unpkg.com/purecss@1.0.1/build/pure-min.css"
+            integrity="sha384-oAOxQR6DkCoMliIh8yFnu25d7Eq/PHS21PClpwjOTeU2jRSq11vu66rf90/cZr47"
+            crossorigin="anonymous"
+		/>
+		<link rel="stylesheet" href="https://unpkg.com/purecss@1.0.1/build/grids-responsive-min.css">
+    </head>
+
+    <body>
+        <div id="elm"></div>
+        <script>
+            var app = Elm.Chargen.init({
+                node: document.getElementById("elm")
+            })
+        </script>
+    </body>
+</html>
