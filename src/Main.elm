@@ -1,12 +1,13 @@
 module Chargen exposing (main)
 
 import Browser
-import Html exposing (Html, div, fieldset, h2, input, label, legend, text)
+import Html exposing (Html, div, fieldset, h2, input, label, legend, table, tbody, td, text, th, thead, tr)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
 import Http
 import Json.Decode as Decode exposing (Decoder, int, string)
 import Json.Decode.Pipeline exposing (required)
+import Json.Encode as Encode
 import MultiSelect exposing (Item, multiSelect)
 
 
@@ -30,7 +31,6 @@ main =
 
 type Model
     = Failure
-    | Loading ModelContent
     | Success ModelContent
 
 
@@ -43,6 +43,7 @@ type alias ModelContent =
 type alias FormData =
     { minLevel : Int
     , maxLevel : Int
+    , count : Int
     , selectedRaces : List String
     }
 
@@ -53,6 +54,8 @@ showFormData data =
         ++ String.fromInt data.minLevel
         ++ ", maxLevel = "
         ++ String.fromInt data.maxLevel
+        ++ ", count = "
+        ++ String.fromInt data.count
         ++ ", selectedRaces = "
         ++ String.concat (List.intersperse ", " data.selectedRaces)
         ++ " }\n"
@@ -65,11 +68,10 @@ defaultSelectedRaces =
 
 defaultFormData : FormData
 defaultFormData =
-    { minLevel = 1, maxLevel = 20, selectedRaces = defaultSelectedRaces }
+    { minLevel = 1, maxLevel = 20, selectedRaces = defaultSelectedRaces, count = 10 }
 
 
 type alias Character =
-    -- TODO: add Attributes and SavingThrows, maybe decoders needed
     { race : String
     , cClass : String
     , level : Int
@@ -79,7 +81,7 @@ type alias Character =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Success { form = defaultFormData, characters = [] }, Cmd.none )
+    ( Success { form = defaultFormData, characters = [] }, getRandomCharacters defaultFormData )
 
 
 
@@ -91,6 +93,8 @@ type Msg
     | RaceSelectionChanged (List String)
     | ChangeMaxLevel String
     | ChangeMinLevel String
+    | ChangeCount String
+    | GenerateCharacters FormData
     | GotCharacters (Result Http.Error (List Character))
 
 
@@ -100,20 +104,21 @@ update msg model =
         Reset ->
             init ()
 
+        GenerateCharacters form ->
+            case model of
+                _ ->
+                    ( model, getRandomCharacters form )
+
         GotCharacters httpResult ->
             case httpResult of
-                -- FIXME: Toteuta oikea käsittely
                 Ok newChars ->
                     let
                         changeChars =
-                            \chars mod -> { mod | characters = chars }
+                            \mod -> { mod | characters = newChars }
                     in
                     case model of
                         Success content ->
-                            ( Success (changeChars newChars content), Cmd.none )
-
-                        Loading content ->
-                            ( Loading (changeChars newChars content), Cmd.none )
+                            ( Success (changeChars content), Cmd.none )
 
                         _ ->
                             ( model, Cmd.none )
@@ -130,9 +135,6 @@ update msg model =
                 Success content ->
                     ( Success { content | form = changeRaces content.form }, Cmd.none )
 
-                Loading content ->
-                    ( Loading { content | form = changeRaces content.form }, Cmd.none )
-
                 _ ->
                     ( model, Cmd.none )
 
@@ -144,9 +146,6 @@ update msg model =
             case model of
                 Success content ->
                     ( Success { content | form = changeLevel content.form }, Cmd.none )
-
-                Loading content ->
-                    ( Loading { content | form = changeLevel content.form }, Cmd.none )
 
                 _ ->
                     ( model, Cmd.none )
@@ -160,8 +159,17 @@ update msg model =
                 Success content ->
                     ( Success { content | form = changeLevel content.form }, Cmd.none )
 
-                Loading content ->
-                    ( Loading { content | form = changeLevel content.form }, Cmd.none )
+                _ ->
+                    ( model, Cmd.none )
+
+        ChangeCount c ->
+            let
+                changeCount =
+                    \form -> { form | count = Maybe.withDefault 1 (String.toInt c) }
+            in
+            case model of
+                Success content ->
+                    ( Success { content | form = changeCount content.form }, Cmd.none )
 
                 _ ->
                     ( model, Cmd.none )
@@ -203,15 +211,23 @@ view model =
                                         [ class "pure-u-4-5", Html.Attributes.required True ]
                                         form.selectedRaces
                                     ]
+                                , levelNumber "Character count" (String.fromInt form.count) ChangeCount
                                 ]
                             )
+                        , Html.button
+                            [ class "pure-button"
+                            , Html.Events.onClick (GenerateCharacters form)
+                            , type_ "button"
+                            ]
+                            [ text "Generate" ]
                         ]
-                    , text (showFormData form)
                     ]
+                , text (showFormData form)
+                , div [] [ characterListView characters ]
                 ]
 
         _ ->
-            div [] [ text (Debug.todo "unhandled") ]
+            div [] [ text "unhandled" ]
 
 
 raceOptions : List String -> List Item
@@ -236,14 +252,41 @@ levelNumber txt val action =
         ]
 
 
+characterListView : List Character -> Html Msg
+characterListView characters =
+    table [ class "pure-table pure-table-horizontal pure-table-striped" ]
+        [ thead []
+            [ tr []
+                [ th [] [ text "Class" ]
+                , th [] [ text "Race" ]
+                , th [] [ text "Level" ]
+                , th [] [ text "Alignment" ]
+                ]
+            ]
+        , tbody []
+            (List.map characterView characters)
+        ]
+
+
+characterView : Character -> Html Msg
+characterView chr =
+    tr []
+        [ td [] [ text chr.cClass ]
+        , td [] [ text chr.race ]
+        , td [] [ text <| String.fromInt chr.level ]
+        , td [] [ text chr.alignment ]
+        ]
+
+
 
 -- HTTP
 
 
-getRandomCharacters : Int -> Cmd Msg
-getRandomCharacters count =
-    Http.get
-        { url = "http://localhost:8080/characters" ++ String.fromInt count
+getRandomCharacters : FormData -> Cmd Msg
+getRandomCharacters form =
+    Http.post
+        { url = "http://localhost:8080/character"
+        , body = Http.jsonBody <| formDataEncode form
         , expect = Http.expectJson GotCharacters (Decode.list characterDecoder)
         }
 
@@ -259,3 +302,12 @@ characterDecoder =
         |> required "cClass" string
         |> required "level" int
         |> required "alignment" string
+
+
+formDataEncode : FormData -> Encode.Value
+formDataEncode form =
+    Encode.object
+        [ ( "minLevel", Encode.int form.minLevel )
+        , ( "maxLevel", Encode.int form.maxLevel )
+        , ( "count", Encode.int form.count )
+        ]
