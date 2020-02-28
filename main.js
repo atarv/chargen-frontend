@@ -6002,44 +6002,39 @@ var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
 var elm$core$String$toInt = _String_toInt;
 var author$project$Chargen$update = F2(
 	function (msg, model) {
-		switch (msg.$) {
-			case 'Reset':
-				return author$project$Chargen$init(_Utils_Tuple0);
-			case 'GenerateCharacters':
-				var form = msg.a;
-				return _Utils_Tuple2(
-					model,
-					author$project$Chargen$getRandomCharacters(form));
-			case 'GotCharacters':
-				var httpResult = msg.a;
-				if (httpResult.$ === 'Ok') {
-					var newChars = httpResult.a;
-					var changeChars = function (mod) {
-						return _Utils_update(
-							mod,
-							{characters: newChars});
-					};
-					if (model.$ === 'Success') {
-						var content = model.a;
+		if (model.$ === 'Success') {
+			var content = model.a;
+			switch (msg.$) {
+				case 'Reset':
+					return author$project$Chargen$init(_Utils_Tuple0);
+				case 'GenerateCharacters':
+					var form = msg.a;
+					return _Utils_Tuple2(
+						model,
+						author$project$Chargen$getRandomCharacters(form));
+				case 'GotCharacters':
+					var httpResult = msg.a;
+					if (httpResult.$ === 'Ok') {
+						var newChars = httpResult.a;
+						var changeChars = function (mod) {
+							return _Utils_update(
+								mod,
+								{characters: newChars});
+						};
 						return _Utils_Tuple2(
 							author$project$Chargen$Success(
 								changeChars(content)),
 							elm$core$Platform$Cmd$none);
 					} else {
-						return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+						return _Utils_Tuple2(author$project$Chargen$Failure, elm$core$Platform$Cmd$none);
 					}
-				} else {
-					return _Utils_Tuple2(author$project$Chargen$Failure, elm$core$Platform$Cmd$none);
-				}
-			case 'RaceSelectionChanged':
-				var newRaces = msg.a;
-				var changeRaces = function (form) {
-					return _Utils_update(
-						form,
-						{selectedRaces: newRaces});
-				};
-				if (model.$ === 'Success') {
-					var content = model.a;
+				case 'RaceSelectionChanged':
+					var newRaces = msg.a;
+					var changeRaces = function (form) {
+						return _Utils_update(
+							form,
+							{selectedRaces: newRaces});
+					};
 					return _Utils_Tuple2(
 						author$project$Chargen$Success(
 							_Utils_update(
@@ -6048,23 +6043,18 @@ var author$project$Chargen$update = F2(
 									form: changeRaces(content.form)
 								})),
 						elm$core$Platform$Cmd$none);
-				} else {
-					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
-				}
-			case 'ChangeMinLevel':
-				var lvl = msg.a;
-				var changeLevel = function (form) {
-					return _Utils_update(
-						form,
-						{
-							minLevel: A2(
-								elm$core$Maybe$withDefault,
-								1,
-								elm$core$String$toInt(lvl))
-						});
-				};
-				if (model.$ === 'Success') {
-					var content = model.a;
+				case 'ChangeMinLevel':
+					var lvl = msg.a;
+					var changeLevel = function (form) {
+						return _Utils_update(
+							form,
+							{
+								minLevel: A2(
+									elm$core$Maybe$withDefault,
+									1,
+									elm$core$String$toInt(lvl))
+							});
+					};
 					return _Utils_Tuple2(
 						author$project$Chargen$Success(
 							_Utils_update(
@@ -6073,23 +6063,18 @@ var author$project$Chargen$update = F2(
 									form: changeLevel(content.form)
 								})),
 						elm$core$Platform$Cmd$none);
-				} else {
-					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
-				}
-			case 'ChangeMaxLevel':
-				var lvl = msg.a;
-				var changeLevel = function (form) {
-					return _Utils_update(
-						form,
-						{
-							maxLevel: A2(
-								elm$core$Maybe$withDefault,
-								1,
-								elm$core$String$toInt(lvl))
-						});
-				};
-				if (model.$ === 'Success') {
-					var content = model.a;
+				case 'ChangeMaxLevel':
+					var lvl = msg.a;
+					var changeLevel = function (form) {
+						return _Utils_update(
+							form,
+							{
+								maxLevel: A2(
+									elm$core$Maybe$withDefault,
+									1,
+									elm$core$String$toInt(lvl))
+							});
+					};
 					return _Utils_Tuple2(
 						author$project$Chargen$Success(
 							_Utils_update(
@@ -6098,23 +6083,18 @@ var author$project$Chargen$update = F2(
 									form: changeLevel(content.form)
 								})),
 						elm$core$Platform$Cmd$none);
-				} else {
-					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
-				}
-			default:
-				var c = msg.a;
-				var changeCount = function (form) {
-					return _Utils_update(
-						form,
-						{
-							count: A2(
-								elm$core$Maybe$withDefault,
-								1,
-								elm$core$String$toInt(c))
-						});
-				};
-				if (model.$ === 'Success') {
-					var content = model.a;
+				default:
+					var c = msg.a;
+					var changeCount = function (form) {
+						return _Utils_update(
+							form,
+							{
+								count: A2(
+									elm$core$Maybe$withDefault,
+									1,
+									elm$core$String$toInt(c))
+							});
+					};
 					return _Utils_Tuple2(
 						author$project$Chargen$Success(
 							_Utils_update(
@@ -6123,106 +6103,12 @@ var author$project$Chargen$update = F2(
 									form: changeCount(content.form)
 								})),
 						elm$core$Platform$Cmd$none);
-				} else {
-					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
-				}
+			}
+		} else {
+			return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 		}
 	});
-var abadi199$elm_input_extra$MultiSelect$Option = F3(
-	function (value, text, selected) {
-		return {selected: selected, text: text, value: value};
-	});
-var elm$json$Json$Decode$bool = _Json_decodeBool;
-var elm$json$Json$Decode$map3 = _Json_map3;
-var abadi199$elm_input_extra$MultiSelect$optionDecoder = A4(
-	elm$json$Json$Decode$map3,
-	abadi199$elm_input_extra$MultiSelect$Option,
-	A2(elm$json$Json$Decode$field, 'value', elm$json$Json$Decode$string),
-	A2(elm$json$Json$Decode$field, 'text', elm$json$Json$Decode$string),
-	A2(elm$json$Json$Decode$field, 'selected', elm$json$Json$Decode$bool));
-var elm$json$Json$Decode$andThen = _Json_andThen;
-var elm$json$Json$Decode$keyValuePairs = _Json_decodeKeyValuePairs;
 var elm$json$Json$Decode$map = _Json_map1;
-var elm$json$Json$Decode$oneOf = _Json_oneOf;
-var elm$json$Json$Decode$maybe = function (decoder) {
-	return elm$json$Json$Decode$oneOf(
-		_List_fromArray(
-			[
-				A2(elm$json$Json$Decode$map, elm$core$Maybe$Just, decoder),
-				elm$json$Json$Decode$succeed(elm$core$Maybe$Nothing)
-			]));
-};
-var abadi199$elm_input_extra$MultiSelect$optionsDecoder = A2(
-	elm$json$Json$Decode$field,
-	'options',
-	A2(
-		elm$json$Json$Decode$andThen,
-		function (list) {
-			var onlySuccess = A3(
-				elm$core$List$foldr,
-				F2(
-					function (_n0, sofar) {
-						var next = _n0.b;
-						if (next.$ === 'Nothing') {
-							return sofar;
-						} else {
-							var x = next.a;
-							return A2(elm$core$List$cons, x, sofar);
-						}
-					}),
-				_List_Nil,
-				list);
-			return elm$json$Json$Decode$succeed(onlySuccess);
-		},
-		elm$json$Json$Decode$keyValuePairs(
-			elm$json$Json$Decode$maybe(abadi199$elm_input_extra$MultiSelect$optionDecoder))));
-var elm$core$List$filter = F2(
-	function (isGood, list) {
-		return A3(
-			elm$core$List$foldr,
-			F2(
-				function (x, xs) {
-					return isGood(x) ? A2(elm$core$List$cons, x, xs) : xs;
-				}),
-			_List_Nil,
-			list);
-	});
-var elm$core$List$map = F2(
-	function (f, xs) {
-		return A3(
-			elm$core$List$foldr,
-			F2(
-				function (x, acc) {
-					return A2(
-						elm$core$List$cons,
-						f(x),
-						acc);
-				}),
-			_List_Nil,
-			xs);
-	});
-var abadi199$elm_input_extra$MultiSelect$selectedOptionsDecoder = function () {
-	var filterSelected = function (options) {
-		return A2(
-			elm$core$List$map,
-			function ($) {
-				return $.value;
-			},
-			A2(
-				elm$core$List$filter,
-				function ($) {
-					return $.selected;
-				},
-				options));
-	};
-	return A2(
-		elm$json$Json$Decode$map,
-		filterSelected,
-		A2(elm$json$Json$Decode$field, 'target', abadi199$elm_input_extra$MultiSelect$optionsDecoder));
-}();
-var elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
-};
 var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
 	switch (handler.$) {
 		case 'Normal':
@@ -6235,119 +6121,9 @@ var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
 			return 3;
 	}
 };
-var elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
-var elm$html$Html$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			elm$virtual_dom$VirtualDom$on,
-			event,
-			elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
-var abadi199$elm_input_extra$MultiSelect$onChange = function (tagger) {
-	return A2(
-		elm$html$Html$Events$on,
-		'change',
-		A2(elm$json$Json$Decode$map, tagger, abadi199$elm_input_extra$MultiSelect$selectedOptionsDecoder));
-};
-var elm$core$Basics$not = _Basics_not;
-var elm$core$List$any = F2(
-	function (isOkay, list) {
-		any:
-		while (true) {
-			if (!list.b) {
-				return false;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				if (isOkay(x)) {
-					return true;
-				} else {
-					var $temp$isOkay = isOkay,
-						$temp$list = xs;
-					isOkay = $temp$isOkay;
-					list = $temp$list;
-					continue any;
-				}
-			}
-		}
-	});
-var elm$html$Html$option = _VirtualDom_node('option');
-var elm$html$Html$select = _VirtualDom_node('select');
+var elm$html$Html$td = _VirtualDom_node('td');
 var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
-var elm$json$Json$Encode$bool = _Json_wrap;
-var elm$html$Html$Attributes$boolProperty = F2(
-	function (key, bool) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			elm$json$Json$Encode$bool(bool));
-	});
-var elm$html$Html$Attributes$disabled = elm$html$Html$Attributes$boolProperty('disabled');
-var elm$html$Html$Attributes$multiple = elm$html$Html$Attributes$boolProperty('multiple');
-var elm$html$Html$Attributes$selected = elm$html$Html$Attributes$boolProperty('selected');
-var elm$json$Json$Encode$string = _Json_wrap;
-var elm$html$Html$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			elm$json$Json$Encode$string(string));
-	});
-var elm$html$Html$Attributes$value = elm$html$Html$Attributes$stringProperty('value');
-var abadi199$elm_input_extra$MultiSelect$multiSelect = F3(
-	function (options, attributes, currentValue) {
-		var isSelected = function (value) {
-			return A2(
-				elm$core$List$any,
-				elm$core$Basics$eq(value),
-				currentValue);
-		};
-		var toOption = function (_n0) {
-			var value = _n0.value;
-			var text = _n0.text;
-			var enabled = _n0.enabled;
-			return A2(
-				elm$html$Html$option,
-				_List_fromArray(
-					[
-						elm$html$Html$Attributes$value(value),
-						elm$html$Html$Attributes$selected(
-						isSelected(value)),
-						elm$html$Html$Attributes$disabled(!enabled)
-					]),
-				_List_fromArray(
-					[
-						elm$html$Html$text(text)
-					]));
-		};
-		return A2(
-			elm$html$Html$select,
-			_Utils_ap(
-				attributes,
-				_List_fromArray(
-					[
-						abadi199$elm_input_extra$MultiSelect$onChange(options.onChange),
-						elm$html$Html$Attributes$multiple(true)
-					])),
-			A2(elm$core$List$map, toOption, options.items));
-	});
-var author$project$Chargen$ChangeCount = function (a) {
-	return {$: 'ChangeCount', a: a};
-};
-var author$project$Chargen$ChangeMaxLevel = function (a) {
-	return {$: 'ChangeMaxLevel', a: a};
-};
-var author$project$Chargen$ChangeMinLevel = function (a) {
-	return {$: 'ChangeMinLevel', a: a};
-};
-var author$project$Chargen$GenerateCharacters = function (a) {
-	return {$: 'GenerateCharacters', a: a};
-};
-var author$project$Chargen$RaceSelectionChanged = function (a) {
-	return {$: 'RaceSelectionChanged', a: a};
-};
-var elm$html$Html$td = _VirtualDom_node('td');
 var elm$html$Html$tr = _VirtualDom_node('tr');
 var author$project$Chargen$characterView = function (chr) {
 	return A2(
@@ -6386,10 +6162,32 @@ var author$project$Chargen$characterView = function (chr) {
 					]))
 			]));
 };
+var elm$core$List$map = F2(
+	function (f, xs) {
+		return A3(
+			elm$core$List$foldr,
+			F2(
+				function (x, acc) {
+					return A2(
+						elm$core$List$cons,
+						f(x),
+						acc);
+				}),
+			_List_Nil,
+			xs);
+	});
 var elm$html$Html$table = _VirtualDom_node('table');
 var elm$html$Html$tbody = _VirtualDom_node('tbody');
 var elm$html$Html$th = _VirtualDom_node('th');
 var elm$html$Html$thead = _VirtualDom_node('thead');
+var elm$json$Json$Encode$string = _Json_wrap;
+var elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			elm$json$Json$Encode$string(string));
+	});
 var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
 var author$project$Chargen$characterListView = function (characters) {
 	return A2(
@@ -6445,6 +6243,188 @@ var author$project$Chargen$characterListView = function (characters) {
 				_List_Nil,
 				A2(elm$core$List$map, author$project$Chargen$characterView, characters))
 			]));
+};
+var abadi199$elm_input_extra$MultiSelect$Option = F3(
+	function (value, text, selected) {
+		return {selected: selected, text: text, value: value};
+	});
+var elm$json$Json$Decode$bool = _Json_decodeBool;
+var elm$json$Json$Decode$map3 = _Json_map3;
+var abadi199$elm_input_extra$MultiSelect$optionDecoder = A4(
+	elm$json$Json$Decode$map3,
+	abadi199$elm_input_extra$MultiSelect$Option,
+	A2(elm$json$Json$Decode$field, 'value', elm$json$Json$Decode$string),
+	A2(elm$json$Json$Decode$field, 'text', elm$json$Json$Decode$string),
+	A2(elm$json$Json$Decode$field, 'selected', elm$json$Json$Decode$bool));
+var elm$json$Json$Decode$andThen = _Json_andThen;
+var elm$json$Json$Decode$keyValuePairs = _Json_decodeKeyValuePairs;
+var elm$json$Json$Decode$oneOf = _Json_oneOf;
+var elm$json$Json$Decode$maybe = function (decoder) {
+	return elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				A2(elm$json$Json$Decode$map, elm$core$Maybe$Just, decoder),
+				elm$json$Json$Decode$succeed(elm$core$Maybe$Nothing)
+			]));
+};
+var abadi199$elm_input_extra$MultiSelect$optionsDecoder = A2(
+	elm$json$Json$Decode$field,
+	'options',
+	A2(
+		elm$json$Json$Decode$andThen,
+		function (list) {
+			var onlySuccess = A3(
+				elm$core$List$foldr,
+				F2(
+					function (_n0, sofar) {
+						var next = _n0.b;
+						if (next.$ === 'Nothing') {
+							return sofar;
+						} else {
+							var x = next.a;
+							return A2(elm$core$List$cons, x, sofar);
+						}
+					}),
+				_List_Nil,
+				list);
+			return elm$json$Json$Decode$succeed(onlySuccess);
+		},
+		elm$json$Json$Decode$keyValuePairs(
+			elm$json$Json$Decode$maybe(abadi199$elm_input_extra$MultiSelect$optionDecoder))));
+var elm$core$List$filter = F2(
+	function (isGood, list) {
+		return A3(
+			elm$core$List$foldr,
+			F2(
+				function (x, xs) {
+					return isGood(x) ? A2(elm$core$List$cons, x, xs) : xs;
+				}),
+			_List_Nil,
+			list);
+	});
+var abadi199$elm_input_extra$MultiSelect$selectedOptionsDecoder = function () {
+	var filterSelected = function (options) {
+		return A2(
+			elm$core$List$map,
+			function ($) {
+				return $.value;
+			},
+			A2(
+				elm$core$List$filter,
+				function ($) {
+					return $.selected;
+				},
+				options));
+	};
+	return A2(
+		elm$json$Json$Decode$map,
+		filterSelected,
+		A2(elm$json$Json$Decode$field, 'target', abadi199$elm_input_extra$MultiSelect$optionsDecoder));
+}();
+var elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			elm$virtual_dom$VirtualDom$on,
+			event,
+			elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var abadi199$elm_input_extra$MultiSelect$onChange = function (tagger) {
+	return A2(
+		elm$html$Html$Events$on,
+		'change',
+		A2(elm$json$Json$Decode$map, tagger, abadi199$elm_input_extra$MultiSelect$selectedOptionsDecoder));
+};
+var elm$core$Basics$not = _Basics_not;
+var elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
+var elm$html$Html$option = _VirtualDom_node('option');
+var elm$html$Html$select = _VirtualDom_node('select');
+var elm$json$Json$Encode$bool = _Json_wrap;
+var elm$html$Html$Attributes$boolProperty = F2(
+	function (key, bool) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			elm$json$Json$Encode$bool(bool));
+	});
+var elm$html$Html$Attributes$disabled = elm$html$Html$Attributes$boolProperty('disabled');
+var elm$html$Html$Attributes$multiple = elm$html$Html$Attributes$boolProperty('multiple');
+var elm$html$Html$Attributes$selected = elm$html$Html$Attributes$boolProperty('selected');
+var elm$html$Html$Attributes$value = elm$html$Html$Attributes$stringProperty('value');
+var abadi199$elm_input_extra$MultiSelect$multiSelect = F3(
+	function (options, attributes, currentValue) {
+		var isSelected = function (value) {
+			return A2(
+				elm$core$List$any,
+				elm$core$Basics$eq(value),
+				currentValue);
+		};
+		var toOption = function (_n0) {
+			var value = _n0.value;
+			var text = _n0.text;
+			var enabled = _n0.enabled;
+			return A2(
+				elm$html$Html$option,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$value(value),
+						elm$html$Html$Attributes$selected(
+						isSelected(value)),
+						elm$html$Html$Attributes$disabled(!enabled)
+					]),
+				_List_fromArray(
+					[
+						elm$html$Html$text(text)
+					]));
+		};
+		return A2(
+			elm$html$Html$select,
+			_Utils_ap(
+				attributes,
+				_List_fromArray(
+					[
+						abadi199$elm_input_extra$MultiSelect$onChange(options.onChange),
+						elm$html$Html$Attributes$multiple(true)
+					])),
+			A2(elm$core$List$map, toOption, options.items));
+	});
+var author$project$Chargen$ChangeCount = function (a) {
+	return {$: 'ChangeCount', a: a};
+};
+var author$project$Chargen$ChangeMaxLevel = function (a) {
+	return {$: 'ChangeMaxLevel', a: a};
+};
+var author$project$Chargen$ChangeMinLevel = function (a) {
+	return {$: 'ChangeMinLevel', a: a};
+};
+var author$project$Chargen$GenerateCharacters = function (a) {
+	return {$: 'GenerateCharacters', a: a};
+};
+var author$project$Chargen$RaceSelectionChanged = function (a) {
+	return {$: 'RaceSelectionChanged', a: a};
 };
 var elm$html$Html$input = _VirtualDom_node('input');
 var elm$html$Html$label = _VirtualDom_node('label');
@@ -6519,6 +6499,110 @@ var author$project$Chargen$raceOptions = function (races) {
 		},
 		races);
 };
+var elm$html$Html$button = _VirtualDom_node('button');
+var elm$html$Html$div = _VirtualDom_node('div');
+var elm$html$Html$fieldset = _VirtualDom_node('fieldset');
+var elm$html$Html$form = _VirtualDom_node('form');
+var elm$html$Html$legend = _VirtualDom_node('legend');
+var elm$html$Html$Attributes$required = elm$html$Html$Attributes$boolProperty('required');
+var elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		elm$html$Html$Events$on,
+		'click',
+		elm$json$Json$Decode$succeed(msg));
+};
+var author$project$Chargen$formView = function (form) {
+	return A2(
+		elm$html$Html$form,
+		_List_fromArray(
+			[
+				elm$html$Html$Attributes$class('pure-form pure-form-stacked')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				elm$html$Html$fieldset,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2(
+						elm$html$Html$legend,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text('Character generation constraints')
+							])),
+						A2(
+						elm$html$Html$div,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('pure-g')
+							]),
+						A2(
+							elm$core$List$map,
+							function (x) {
+								return A2(
+									elm$html$Html$div,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('pure-u-1 pure-u-md-1-4')
+										]),
+									_List_fromArray(
+										[x]));
+							},
+							_List_fromArray(
+								[
+									A3(
+									author$project$Chargen$levelNumber,
+									'Min level',
+									elm$core$String$fromInt(form.minLevel),
+									author$project$Chargen$ChangeMinLevel),
+									A3(
+									author$project$Chargen$levelNumber,
+									'Max level',
+									elm$core$String$fromInt(form.maxLevel),
+									author$project$Chargen$ChangeMaxLevel),
+									A2(
+									elm$html$Html$label,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text('Races'),
+											A3(
+											abadi199$elm_input_extra$MultiSelect$multiSelect,
+											{
+												items: author$project$Chargen$raceOptions(author$project$Chargen$defaultSelectedRaces),
+												onChange: author$project$Chargen$RaceSelectionChanged
+											},
+											_List_fromArray(
+												[
+													elm$html$Html$Attributes$class('pure-u-4-5'),
+													elm$html$Html$Attributes$required(true)
+												]),
+											form.selectedRaces)
+										])),
+									A3(
+									author$project$Chargen$levelNumber,
+									'Character count',
+									elm$core$String$fromInt(form.count),
+									author$project$Chargen$ChangeCount)
+								]))),
+						A2(
+						elm$html$Html$button,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('pure-button'),
+								elm$html$Html$Events$onClick(
+								author$project$Chargen$GenerateCharacters(form)),
+								elm$html$Html$Attributes$type_('button')
+							]),
+						_List_fromArray(
+							[
+								elm$html$Html$text('Generate')
+							]))
+					]))
+			]));
+};
 var elm$core$List$intersperse = F2(
 	function (sep, xs) {
 		if (!xs.b) {
@@ -6544,20 +6628,8 @@ var author$project$Chargen$showFormData = function (data) {
 	return 'FormData { minLevel = ' + (elm$core$String$fromInt(data.minLevel) + (', maxLevel = ' + (elm$core$String$fromInt(data.maxLevel) + (', count = ' + (elm$core$String$fromInt(data.count) + (', selectedRaces = ' + (elm$core$String$concat(
 		A2(elm$core$List$intersperse, ', ', data.selectedRaces)) + ' }\n')))))));
 };
-var elm$html$Html$button = _VirtualDom_node('button');
-var elm$html$Html$div = _VirtualDom_node('div');
-var elm$html$Html$fieldset = _VirtualDom_node('fieldset');
-var elm$html$Html$form = _VirtualDom_node('form');
 var elm$html$Html$h2 = _VirtualDom_node('h2');
-var elm$html$Html$legend = _VirtualDom_node('legend');
 var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
-var elm$html$Html$Attributes$required = elm$html$Html$Attributes$boolProperty('required');
-var elm$html$Html$Events$onClick = function (msg) {
-	return A2(
-		elm$html$Html$Events$on,
-		'click',
-		elm$json$Json$Decode$succeed(msg));
-};
 var author$project$Chargen$view = function (model) {
 	if (model.$ === 'Success') {
 		var form = model.a.form;
@@ -6580,96 +6652,7 @@ var author$project$Chargen$view = function (model) {
 						[
 							elm$html$Html$text('OSRIC Random Character Generator')
 						])),
-					A2(
-					elm$html$Html$form,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$class('pure-form pure-form-stacked')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							elm$html$Html$fieldset,
-							_List_Nil,
-							_List_fromArray(
-								[
-									A2(
-									elm$html$Html$legend,
-									_List_Nil,
-									_List_fromArray(
-										[
-											elm$html$Html$text('Character generation constraints')
-										])),
-									A2(
-									elm$html$Html$div,
-									_List_fromArray(
-										[
-											elm$html$Html$Attributes$class('pure-g')
-										]),
-									A2(
-										elm$core$List$map,
-										function (x) {
-											return A2(
-												elm$html$Html$div,
-												_List_fromArray(
-													[
-														elm$html$Html$Attributes$class('pure-u-1 pure-u-md-1-4')
-													]),
-												_List_fromArray(
-													[x]));
-										},
-										_List_fromArray(
-											[
-												A3(
-												author$project$Chargen$levelNumber,
-												'Min level',
-												elm$core$String$fromInt(form.minLevel),
-												author$project$Chargen$ChangeMinLevel),
-												A3(
-												author$project$Chargen$levelNumber,
-												'Max level',
-												elm$core$String$fromInt(form.maxLevel),
-												author$project$Chargen$ChangeMaxLevel),
-												A2(
-												elm$html$Html$label,
-												_List_Nil,
-												_List_fromArray(
-													[
-														elm$html$Html$text('Races'),
-														A3(
-														abadi199$elm_input_extra$MultiSelect$multiSelect,
-														{
-															items: author$project$Chargen$raceOptions(author$project$Chargen$defaultSelectedRaces),
-															onChange: author$project$Chargen$RaceSelectionChanged
-														},
-														_List_fromArray(
-															[
-																elm$html$Html$Attributes$class('pure-u-4-5'),
-																elm$html$Html$Attributes$required(true)
-															]),
-														form.selectedRaces)
-													])),
-												A3(
-												author$project$Chargen$levelNumber,
-												'Character count',
-												elm$core$String$fromInt(form.count),
-												author$project$Chargen$ChangeCount)
-											]))),
-									A2(
-									elm$html$Html$button,
-									_List_fromArray(
-										[
-											elm$html$Html$Attributes$class('pure-button'),
-											elm$html$Html$Events$onClick(
-											author$project$Chargen$GenerateCharacters(form)),
-											elm$html$Html$Attributes$type_('button')
-										]),
-									_List_fromArray(
-										[
-											elm$html$Html$text('Generate')
-										]))
-								]))
-						])),
+					author$project$Chargen$formView(form),
 					elm$html$Html$text(
 					author$project$Chargen$showFormData(form)),
 					A2(

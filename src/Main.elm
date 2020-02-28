@@ -100,79 +100,57 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
-        Reset ->
-            init ()
+    case model of
+        Success content ->
+            case msg of
+                Reset ->
+                    init ()
 
-        GenerateCharacters form ->
-            case model of
-                _ ->
+                GenerateCharacters form ->
                     ( model, getRandomCharacters form )
 
-        GotCharacters httpResult ->
-            case httpResult of
-                Ok newChars ->
-                    let
-                        changeChars =
-                            \mod -> { mod | characters = newChars }
-                    in
-                    case model of
-                        Success content ->
+                GotCharacters httpResult ->
+                    case httpResult of
+                        Ok newChars ->
+                            let
+                                changeChars =
+                                    \mod -> { mod | characters = newChars }
+                            in
                             ( Success (changeChars content), Cmd.none )
 
-                        _ ->
-                            ( model, Cmd.none )
+                        Err _ ->
+                            ( Failure, Cmd.none )
 
-                Err _ ->
-                    ( Failure, Cmd.none )
-
-        RaceSelectionChanged newRaces ->
-            let
-                changeRaces =
-                    \form -> { form | selectedRaces = newRaces }
-            in
-            case model of
-                Success content ->
+                RaceSelectionChanged newRaces ->
+                    let
+                        changeRaces =
+                            \form -> { form | selectedRaces = newRaces }
+                    in
                     ( Success { content | form = changeRaces content.form }, Cmd.none )
 
-                _ ->
-                    ( model, Cmd.none )
-
-        ChangeMinLevel lvl ->
-            let
-                changeLevel =
-                    \form -> { form | minLevel = Maybe.withDefault 1 (String.toInt lvl) }
-            in
-            case model of
-                Success content ->
+                ChangeMinLevel lvl ->
+                    let
+                        changeLevel =
+                            \form -> { form | minLevel = Maybe.withDefault 1 (String.toInt lvl) }
+                    in
                     ( Success { content | form = changeLevel content.form }, Cmd.none )
 
-                _ ->
-                    ( model, Cmd.none )
-
-        ChangeMaxLevel lvl ->
-            let
-                changeLevel =
-                    \form -> { form | maxLevel = Maybe.withDefault 1 (String.toInt lvl) }
-            in
-            case model of
-                Success content ->
+                ChangeMaxLevel lvl ->
+                    let
+                        changeLevel =
+                            \form -> { form | maxLevel = Maybe.withDefault 1 (String.toInt lvl) }
+                    in
                     ( Success { content | form = changeLevel content.form }, Cmd.none )
 
-                _ ->
-                    ( model, Cmd.none )
-
-        ChangeCount c ->
-            let
-                changeCount =
-                    \form -> { form | count = Maybe.withDefault 1 (String.toInt c) }
-            in
-            case model of
-                Success content ->
+                ChangeCount c ->
+                    let
+                        changeCount =
+                            \form -> { form | count = Maybe.withDefault 1 (String.toInt c) }
+                    in
                     ( Success { content | form = changeCount content.form }, Cmd.none )
 
-                _ ->
-                    ( model, Cmd.none )
+        _ ->
+            ( model, Cmd.none )
 
 
 
@@ -194,40 +172,45 @@ view model =
         Success { form, characters } ->
             div [ class "content" ]
                 [ h2 [ id "app-header" ] [ text "OSRIC Random Character Generator" ]
-                , Html.form [ class "pure-form pure-form-stacked" ]
-                    [ fieldset []
-                        [ legend [] [ text "Character generation constraints" ]
-                        , div [ class "pure-g" ]
-                            -- Add grid class for every form field
-                            (List.map (\x -> div [ class "pure-u-1 pure-u-md-1-4" ] [ x ])
-                                [ levelNumber "Min level" (String.fromInt form.minLevel) ChangeMinLevel
-                                , levelNumber "Max level" (String.fromInt form.maxLevel) ChangeMaxLevel
-                                , label []
-                                    [ text "Races"
-                                    , multiSelect
-                                        { items = raceOptions defaultSelectedRaces
-                                        , onChange = RaceSelectionChanged
-                                        }
-                                        [ class "pure-u-4-5", Html.Attributes.required True ]
-                                        form.selectedRaces
-                                    ]
-                                , levelNumber "Character count" (String.fromInt form.count) ChangeCount
-                                ]
-                            )
-                        , Html.button
-                            [ class "pure-button"
-                            , Html.Events.onClick (GenerateCharacters form)
-                            , type_ "button"
-                            ]
-                            [ text "Generate" ]
-                        ]
-                    ]
+                , formView form
                 , text (showFormData form)
                 , div [] [ characterListView characters ]
                 ]
 
         _ ->
             div [] [ text "unhandled" ]
+
+
+formView : FormData -> Html Msg
+formView form =
+    Html.form [ class "pure-form pure-form-stacked" ]
+        [ fieldset []
+            [ legend [] [ text "Character generation constraints" ]
+            , div [ class "pure-g" ]
+                -- Add grid class for every form field
+                (List.map (\x -> div [ class "pure-u-1 pure-u-md-1-4" ] [ x ])
+                    [ levelNumber "Min level" (String.fromInt form.minLevel) ChangeMinLevel
+                    , levelNumber "Max level" (String.fromInt form.maxLevel) ChangeMaxLevel
+                    , label []
+                        [ text "Races"
+                        , multiSelect
+                            { items = raceOptions defaultSelectedRaces
+                            , onChange = RaceSelectionChanged
+                            }
+                            [ class "pure-u-4-5", Html.Attributes.required True ]
+                            form.selectedRaces
+                        ]
+                    , levelNumber "Character count" (String.fromInt form.count) ChangeCount
+                    ]
+                )
+            , Html.button
+                [ class "pure-button"
+                , Html.Events.onClick (GenerateCharacters form)
+                , type_ "button"
+                ]
+                [ text "Generate" ]
+            ]
+        ]
 
 
 raceOptions : List String -> List Item
