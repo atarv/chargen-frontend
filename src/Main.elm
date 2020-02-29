@@ -1,7 +1,7 @@
 module Chargen exposing (main)
 
 import Browser
-import Html exposing (Html, div, fieldset, h2, input, label, legend, table, tbody, td, text, th, thead, tr)
+import Html exposing (Html, div, fieldset, h2, input, label, legend, pre, table, tbody, td, text, th, thead, tr)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
 import Http
@@ -45,30 +45,38 @@ type alias FormData =
     , maxLevel : Int
     , count : Int
     , selectedRaces : List String
+    , selectedClasses : List String
     }
 
 
 showFormData : FormData -> String
 showFormData data =
-    "FormData { minLevel = "
+    "FormData\n{ minLevel = "
         ++ String.fromInt data.minLevel
-        ++ ", maxLevel = "
+        ++ "\n, maxLevel = "
         ++ String.fromInt data.maxLevel
-        ++ ", count = "
+        ++ "\n, count = "
         ++ String.fromInt data.count
-        ++ ", selectedRaces = "
+        ++ "\n, selectedRaces = "
         ++ String.concat (List.intersperse ", " data.selectedRaces)
-        ++ " }\n"
+        ++ "\n, selectedClasses = "
+        ++ String.concat (List.intersperse ", " data.selectedClasses)
+        ++ "\n}\n"
 
 
-defaultSelectedRaces : List String
-defaultSelectedRaces =
+allRaces : List String
+allRaces =
     [ "Dwarf", "Elf", "Gnome" ]
+
+
+allClasses : List String
+allClasses =
+    [ "Assassin", "Cleric", "Druid", "Fighter" ]
 
 
 defaultFormData : FormData
 defaultFormData =
-    { minLevel = 1, maxLevel = 20, selectedRaces = defaultSelectedRaces, count = 10 }
+    { minLevel = 1, maxLevel = 20, selectedRaces = allRaces, selectedClasses = allClasses, count = 10 }
 
 
 type alias Character =
@@ -91,6 +99,7 @@ init _ =
 type Msg
     = Reset
     | RaceSelectionChanged (List String)
+    | ClassSelectionChanged (List String)
     | ChangeMaxLevel String
     | ChangeMinLevel String
     | ChangeCount String
@@ -127,6 +136,13 @@ update msg model =
                             \form -> { form | selectedRaces = newRaces }
                     in
                     ( Success { content | form = changeRaces content.form }, Cmd.none )
+
+                ClassSelectionChanged newClasses ->
+                    let
+                        changeClasses =
+                            \form -> { form | selectedClasses = newClasses }
+                    in
+                    ( Success { content | form = changeClasses content.form }, Cmd.none )
 
                 ChangeMinLevel lvl ->
                     let
@@ -173,7 +189,7 @@ view model =
             div [ class "content" ]
                 [ h2 [ id "app-header" ] [ text "OSRIC Random Character Generator" ]
                 , formView form
-                , text (showFormData form)
+                , pre [] [ text (showFormData form) ]
                 , div [] [ characterListView characters ]
                 ]
 
@@ -194,11 +210,20 @@ formView form =
                     , label []
                         [ text "Races"
                         , multiSelect
-                            { items = raceOptions defaultSelectedRaces
+                            { items = optionsFromList allRaces
                             , onChange = RaceSelectionChanged
                             }
                             [ class "pure-u-4-5", Html.Attributes.required True ]
                             form.selectedRaces
+                        ]
+                    , label []
+                        [ text "Classes"
+                        , multiSelect
+                            { items = optionsFromList allClasses
+                            , onChange = ClassSelectionChanged
+                            }
+                            [ class "pure-u-4-5", Html.Attributes.required True ]
+                            form.selectedClasses
                         ]
                     , levelNumber "Character count" (String.fromInt form.count) ChangeCount
                     ]
@@ -213,8 +238,8 @@ formView form =
         ]
 
 
-raceOptions : List String -> List Item
-raceOptions races =
+optionsFromList : List String -> List Item
+optionsFromList races =
     List.map (\s -> { value = s, text = s, enabled = True }) races
 
 
@@ -293,4 +318,6 @@ formDataEncode form =
         [ ( "minLevel", Encode.int form.minLevel )
         , ( "maxLevel", Encode.int form.maxLevel )
         , ( "count", Encode.int form.count )
+        , ( "selectedRaces", Encode.list Encode.string form.selectedRaces )
+        , ( "selectedClasses", Encode.list Encode.string form.selectedClasses )
         ]

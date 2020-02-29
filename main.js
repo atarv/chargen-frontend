@@ -4613,9 +4613,11 @@ var elm$core$Set$toList = function (_n0) {
 	var dict = _n0.a;
 	return elm$core$Dict$keys(dict);
 };
-var author$project$Chargen$defaultSelectedRaces = _List_fromArray(
+var author$project$Chargen$allClasses = _List_fromArray(
+	['Assassin', 'Cleric', 'Druid', 'Fighter']);
+var author$project$Chargen$allRaces = _List_fromArray(
 	['Dwarf', 'Elf', 'Gnome']);
-var author$project$Chargen$defaultFormData = {count: 10, maxLevel: 20, minLevel: 1, selectedRaces: author$project$Chargen$defaultSelectedRaces};
+var author$project$Chargen$defaultFormData = {count: 10, maxLevel: 20, minLevel: 1, selectedClasses: author$project$Chargen$allClasses, selectedRaces: author$project$Chargen$allRaces};
 var author$project$Chargen$GotCharacters = function (a) {
 	return {$: 'GotCharacters', a: a};
 };
@@ -5049,6 +5051,15 @@ var author$project$Chargen$characterDecoder = A3(
 				elm$json$Json$Decode$string,
 				elm$json$Json$Decode$succeed(author$project$Chargen$Character)))));
 var elm$json$Json$Encode$int = _Json_wrap;
+var elm$json$Json$Encode$list = F2(
+	function (func, entries) {
+		return _Json_wrap(
+			A3(
+				elm$core$List$foldl,
+				_Json_addEntry(func),
+				_Json_emptyArray(_Utils_Tuple0),
+				entries));
+	});
 var elm$json$Json$Encode$object = function (pairs) {
 	return _Json_wrap(
 		A3(
@@ -5062,6 +5073,7 @@ var elm$json$Json$Encode$object = function (pairs) {
 			_Json_emptyObject(_Utils_Tuple0),
 			pairs));
 };
+var elm$json$Json$Encode$string = _Json_wrap;
 var author$project$Chargen$formDataEncode = function (form) {
 	return elm$json$Json$Encode$object(
 		_List_fromArray(
@@ -5074,7 +5086,13 @@ var author$project$Chargen$formDataEncode = function (form) {
 				elm$json$Json$Encode$int(form.maxLevel)),
 				_Utils_Tuple2(
 				'count',
-				elm$json$Json$Encode$int(form.count))
+				elm$json$Json$Encode$int(form.count)),
+				_Utils_Tuple2(
+				'selectedRaces',
+				A2(elm$json$Json$Encode$list, elm$json$Json$Encode$string, form.selectedRaces)),
+				_Utils_Tuple2(
+				'selectedClasses',
+				A2(elm$json$Json$Encode$list, elm$json$Json$Encode$string, form.selectedClasses))
 			]));
 };
 var elm$core$Result$mapError = F2(
@@ -6043,6 +6061,21 @@ var author$project$Chargen$update = F2(
 									form: changeRaces(content.form)
 								})),
 						elm$core$Platform$Cmd$none);
+				case 'ClassSelectionChanged':
+					var newClasses = msg.a;
+					var changeClasses = function (form) {
+						return _Utils_update(
+							form,
+							{selectedClasses: newClasses});
+					};
+					return _Utils_Tuple2(
+						author$project$Chargen$Success(
+							_Utils_update(
+								content,
+								{
+									form: changeClasses(content.form)
+								})),
+						elm$core$Platform$Cmd$none);
 				case 'ChangeMinLevel':
 					var lvl = msg.a;
 					var changeLevel = function (form) {
@@ -6180,7 +6213,6 @@ var elm$html$Html$table = _VirtualDom_node('table');
 var elm$html$Html$tbody = _VirtualDom_node('tbody');
 var elm$html$Html$th = _VirtualDom_node('th');
 var elm$html$Html$thead = _VirtualDom_node('thead');
-var elm$json$Json$Encode$string = _Json_wrap;
 var elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
 		return A2(
@@ -6420,6 +6452,9 @@ var author$project$Chargen$ChangeMaxLevel = function (a) {
 var author$project$Chargen$ChangeMinLevel = function (a) {
 	return {$: 'ChangeMinLevel', a: a};
 };
+var author$project$Chargen$ClassSelectionChanged = function (a) {
+	return {$: 'ClassSelectionChanged', a: a};
+};
 var author$project$Chargen$GenerateCharacters = function (a) {
 	return {$: 'GenerateCharacters', a: a};
 };
@@ -6491,7 +6526,7 @@ var author$project$Chargen$levelNumber = F3(
 					_List_Nil)
 				]));
 	});
-var author$project$Chargen$raceOptions = function (races) {
+var author$project$Chargen$optionsFromList = function (races) {
 	return A2(
 		elm$core$List$map,
 		function (s) {
@@ -6571,7 +6606,7 @@ var author$project$Chargen$formView = function (form) {
 											A3(
 											abadi199$elm_input_extra$MultiSelect$multiSelect,
 											{
-												items: author$project$Chargen$raceOptions(author$project$Chargen$defaultSelectedRaces),
+												items: author$project$Chargen$optionsFromList(author$project$Chargen$allRaces),
 												onChange: author$project$Chargen$RaceSelectionChanged
 											},
 											_List_fromArray(
@@ -6580,6 +6615,25 @@ var author$project$Chargen$formView = function (form) {
 													elm$html$Html$Attributes$required(true)
 												]),
 											form.selectedRaces)
+										])),
+									A2(
+									elm$html$Html$label,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text('Classes'),
+											A3(
+											abadi199$elm_input_extra$MultiSelect$multiSelect,
+											{
+												items: author$project$Chargen$optionsFromList(author$project$Chargen$allClasses),
+												onChange: author$project$Chargen$ClassSelectionChanged
+											},
+											_List_fromArray(
+												[
+													elm$html$Html$Attributes$class('pure-u-4-5'),
+													elm$html$Html$Attributes$required(true)
+												]),
+											form.selectedClasses)
 										])),
 									A3(
 									author$project$Chargen$levelNumber,
@@ -6625,10 +6679,12 @@ var elm$core$String$concat = function (strings) {
 	return A2(elm$core$String$join, '', strings);
 };
 var author$project$Chargen$showFormData = function (data) {
-	return 'FormData { minLevel = ' + (elm$core$String$fromInt(data.minLevel) + (', maxLevel = ' + (elm$core$String$fromInt(data.maxLevel) + (', count = ' + (elm$core$String$fromInt(data.count) + (', selectedRaces = ' + (elm$core$String$concat(
-		A2(elm$core$List$intersperse, ', ', data.selectedRaces)) + ' }\n')))))));
+	return 'FormData\n{ minLevel = ' + (elm$core$String$fromInt(data.minLevel) + ('\n, maxLevel = ' + (elm$core$String$fromInt(data.maxLevel) + ('\n, count = ' + (elm$core$String$fromInt(data.count) + ('\n, selectedRaces = ' + (elm$core$String$concat(
+		A2(elm$core$List$intersperse, ', ', data.selectedRaces)) + ('\n, selectedClasses = ' + (elm$core$String$concat(
+		A2(elm$core$List$intersperse, ', ', data.selectedClasses)) + '\n}\n')))))))));
 };
 var elm$html$Html$h2 = _VirtualDom_node('h2');
+var elm$html$Html$pre = _VirtualDom_node('pre');
 var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
 var author$project$Chargen$view = function (model) {
 	if (model.$ === 'Success') {
@@ -6653,8 +6709,14 @@ var author$project$Chargen$view = function (model) {
 							elm$html$Html$text('OSRIC Random Character Generator')
 						])),
 					author$project$Chargen$formView(form),
-					elm$html$Html$text(
-					author$project$Chargen$showFormData(form)),
+					A2(
+					elm$html$Html$pre,
+					_List_Nil,
+					_List_fromArray(
+						[
+							elm$html$Html$text(
+							author$project$Chargen$showFormData(form))
+						])),
 					A2(
 					elm$html$Html$div,
 					_List_Nil,
