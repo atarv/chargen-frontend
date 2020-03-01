@@ -205,8 +205,8 @@ formView form =
             , div [ class "pure-g" ]
                 -- Add grid class for every form field
                 (List.map (\x -> div [ class "pure-u-1 pure-u-md-1-4" ] [ x ])
-                    [ levelNumber "Min level" (String.fromInt form.minLevel) ChangeMinLevel
-                    , levelNumber "Max level" (String.fromInt form.maxLevel) ChangeMaxLevel
+                    [ levelNumber "Min level" form.minLevel 1 form.maxLevel ChangeMinLevel
+                    , levelNumber "Max level" form.maxLevel form.minLevel 100 ChangeMaxLevel
                     , label []
                         [ text "Races"
                         , multiSelect
@@ -225,7 +225,7 @@ formView form =
                             [ class "pure-u-4-5", Html.Attributes.required True ]
                             form.selectedClasses
                         ]
-                    , levelNumber "Character count" (String.fromInt form.count) ChangeCount
+                    , levelNumber "Character count" form.count 1 100 ChangeCount
                     ]
                 )
             , Html.button
@@ -243,17 +243,17 @@ optionsFromList races =
     List.map (\s -> { value = s, text = s, enabled = True }) races
 
 
-levelNumber : String -> String -> (String -> Msg) -> Html Msg
-levelNumber txt val action =
+levelNumber : String -> Int -> Int -> Int -> (String -> Msg) -> Html Msg
+levelNumber txt val min max action =
     label []
         [ text txt
         , input
             [ class "pure-u-5-24 level-number"
             , type_ "number"
-            , value val
+            , value (String.fromInt val)
             , onInput action
-            , Html.Attributes.min "1"
-            , Html.Attributes.max "100"
+            , Html.Attributes.min (String.fromInt min)
+            , Html.Attributes.max (String.fromInt max)
             , size 2
             ]
             []
@@ -265,8 +265,8 @@ characterListView characters =
     table [ class "pure-table pure-table-horizontal pure-table-striped" ]
         [ thead []
             [ tr []
-                [ th [] [ text "Class" ]
-                , th [] [ text "Race" ]
+                [ th [] [ text "Race" ]
+                , th [] [ text "Class" ]
                 , th [] [ text "Level" ]
                 , th [] [ text "Alignment" ]
                 ]
@@ -279,8 +279,8 @@ characterListView characters =
 characterView : Character -> Html Msg
 characterView chr =
     tr []
-        [ td [] [ text chr.cClass ]
-        , td [] [ text chr.race ]
+        [ td [] [ text chr.race ]
+        , td [] [ text chr.cClass ]
         , td [] [ text <| String.fromInt chr.level ]
         , td [] [ text chr.alignment ]
         ]

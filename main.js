@@ -6169,14 +6169,14 @@ var author$project$Chargen$characterView = function (chr) {
 				_List_Nil,
 				_List_fromArray(
 					[
-						elm$html$Html$text(chr.cClass)
+						elm$html$Html$text(chr.race)
 					])),
 				A2(
 				elm$html$Html$td,
 				_List_Nil,
 				_List_fromArray(
 					[
-						elm$html$Html$text(chr.race)
+						elm$html$Html$text(chr.cClass)
 					])),
 				A2(
 				elm$html$Html$td,
@@ -6245,14 +6245,14 @@ var author$project$Chargen$characterListView = function (characters) {
 								_List_Nil,
 								_List_fromArray(
 									[
-										elm$html$Html$text('Class')
+										elm$html$Html$text('Race')
 									])),
 								A2(
 								elm$html$Html$th,
 								_List_Nil,
 								_List_fromArray(
 									[
-										elm$html$Html$text('Race')
+										elm$html$Html$text('Class')
 									])),
 								A2(
 								elm$html$Html$th,
@@ -6503,8 +6503,8 @@ var elm$html$Html$Events$onInput = function (tagger) {
 			elm$html$Html$Events$alwaysStop,
 			A2(elm$json$Json$Decode$map, tagger, elm$html$Html$Events$targetValue)));
 };
-var author$project$Chargen$levelNumber = F3(
-	function (txt, val, action) {
+var author$project$Chargen$levelNumber = F5(
+	function (txt, val, min, max, action) {
 		return A2(
 			elm$html$Html$label,
 			_List_Nil,
@@ -6517,10 +6517,13 @@ var author$project$Chargen$levelNumber = F3(
 						[
 							elm$html$Html$Attributes$class('pure-u-5-24 level-number'),
 							elm$html$Html$Attributes$type_('number'),
-							elm$html$Html$Attributes$value(val),
+							elm$html$Html$Attributes$value(
+							elm$core$String$fromInt(val)),
 							elm$html$Html$Events$onInput(action),
-							elm$html$Html$Attributes$min('1'),
-							elm$html$Html$Attributes$max('100'),
+							elm$html$Html$Attributes$min(
+							elm$core$String$fromInt(min)),
+							elm$html$Html$Attributes$max(
+							elm$core$String$fromInt(max)),
 							elm$html$Html$Attributes$size(2)
 						]),
 					_List_Nil)
@@ -6587,16 +6590,8 @@ var author$project$Chargen$formView = function (form) {
 							},
 							_List_fromArray(
 								[
-									A3(
-									author$project$Chargen$levelNumber,
-									'Min level',
-									elm$core$String$fromInt(form.minLevel),
-									author$project$Chargen$ChangeMinLevel),
-									A3(
-									author$project$Chargen$levelNumber,
-									'Max level',
-									elm$core$String$fromInt(form.maxLevel),
-									author$project$Chargen$ChangeMaxLevel),
+									A5(author$project$Chargen$levelNumber, 'Min level', form.minLevel, 1, form.maxLevel, author$project$Chargen$ChangeMinLevel),
+									A5(author$project$Chargen$levelNumber, 'Max level', form.maxLevel, form.minLevel, 100, author$project$Chargen$ChangeMaxLevel),
 									A2(
 									elm$html$Html$label,
 									_List_Nil,
@@ -6635,11 +6630,7 @@ var author$project$Chargen$formView = function (form) {
 												]),
 											form.selectedClasses)
 										])),
-									A3(
-									author$project$Chargen$levelNumber,
-									'Character count',
-									elm$core$String$fromInt(form.count),
-									author$project$Chargen$ChangeCount)
+									A5(author$project$Chargen$levelNumber, 'Character count', form.count, 1, 100, author$project$Chargen$ChangeCount)
 								]))),
 						A2(
 						elm$html$Html$button,
