@@ -232,6 +232,87 @@ var _JsArray_appendN = F3(function(n, dest, source)
 
 
 
+var _List_Nil_UNUSED = { $: 0 };
+var _List_Nil = { $: '[]' };
+
+function _List_Cons_UNUSED(hd, tl) { return { $: 1, a: hd, b: tl }; }
+function _List_Cons(hd, tl) { return { $: '::', a: hd, b: tl }; }
+
+
+var _List_cons = F2(_List_Cons);
+
+function _List_fromArray(arr)
+{
+	var out = _List_Nil;
+	for (var i = arr.length; i--; )
+	{
+		out = _List_Cons(arr[i], out);
+	}
+	return out;
+}
+
+function _List_toArray(xs)
+{
+	for (var out = []; xs.b; xs = xs.b) // WHILE_CONS
+	{
+		out.push(xs.a);
+	}
+	return out;
+}
+
+var _List_map2 = F3(function(f, xs, ys)
+{
+	for (var arr = []; xs.b && ys.b; xs = xs.b, ys = ys.b) // WHILE_CONSES
+	{
+		arr.push(A2(f, xs.a, ys.a));
+	}
+	return _List_fromArray(arr);
+});
+
+var _List_map3 = F4(function(f, xs, ys, zs)
+{
+	for (var arr = []; xs.b && ys.b && zs.b; xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
+	{
+		arr.push(A3(f, xs.a, ys.a, zs.a));
+	}
+	return _List_fromArray(arr);
+});
+
+var _List_map4 = F5(function(f, ws, xs, ys, zs)
+{
+	for (var arr = []; ws.b && xs.b && ys.b && zs.b; ws = ws.b, xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
+	{
+		arr.push(A4(f, ws.a, xs.a, ys.a, zs.a));
+	}
+	return _List_fromArray(arr);
+});
+
+var _List_map5 = F6(function(f, vs, ws, xs, ys, zs)
+{
+	for (var arr = []; vs.b && ws.b && xs.b && ys.b && zs.b; vs = vs.b, ws = ws.b, xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
+	{
+		arr.push(A5(f, vs.a, ws.a, xs.a, ys.a, zs.a));
+	}
+	return _List_fromArray(arr);
+});
+
+var _List_sortBy = F2(function(f, xs)
+{
+	return _List_fromArray(_List_toArray(xs).sort(function(a, b) {
+		return _Utils_cmp(f(a), f(b));
+	}));
+});
+
+var _List_sortWith = F2(function(f, xs)
+{
+	return _List_fromArray(_List_toArray(xs).sort(function(a, b) {
+		var ord = A2(f, a, b);
+		return ord === elm$core$Basics$EQ ? 0 : ord === elm$core$Basics$LT ? -1 : 1;
+	}));
+});
+
+
+
 // LOG
 
 var _Debug_log_UNUSED = F2(function(tag, value)
@@ -709,87 +790,6 @@ function _Utils_ap(xs, ys)
 	}
 	return root;
 }
-
-
-
-var _List_Nil_UNUSED = { $: 0 };
-var _List_Nil = { $: '[]' };
-
-function _List_Cons_UNUSED(hd, tl) { return { $: 1, a: hd, b: tl }; }
-function _List_Cons(hd, tl) { return { $: '::', a: hd, b: tl }; }
-
-
-var _List_cons = F2(_List_Cons);
-
-function _List_fromArray(arr)
-{
-	var out = _List_Nil;
-	for (var i = arr.length; i--; )
-	{
-		out = _List_Cons(arr[i], out);
-	}
-	return out;
-}
-
-function _List_toArray(xs)
-{
-	for (var out = []; xs.b; xs = xs.b) // WHILE_CONS
-	{
-		out.push(xs.a);
-	}
-	return out;
-}
-
-var _List_map2 = F3(function(f, xs, ys)
-{
-	for (var arr = []; xs.b && ys.b; xs = xs.b, ys = ys.b) // WHILE_CONSES
-	{
-		arr.push(A2(f, xs.a, ys.a));
-	}
-	return _List_fromArray(arr);
-});
-
-var _List_map3 = F4(function(f, xs, ys, zs)
-{
-	for (var arr = []; xs.b && ys.b && zs.b; xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
-	{
-		arr.push(A3(f, xs.a, ys.a, zs.a));
-	}
-	return _List_fromArray(arr);
-});
-
-var _List_map4 = F5(function(f, ws, xs, ys, zs)
-{
-	for (var arr = []; ws.b && xs.b && ys.b && zs.b; ws = ws.b, xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
-	{
-		arr.push(A4(f, ws.a, xs.a, ys.a, zs.a));
-	}
-	return _List_fromArray(arr);
-});
-
-var _List_map5 = F6(function(f, vs, ws, xs, ys, zs)
-{
-	for (var arr = []; vs.b && ws.b && xs.b && ys.b && zs.b; vs = vs.b, ws = ws.b, xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
-	{
-		arr.push(A5(f, vs.a, ws.a, xs.a, ys.a, zs.a));
-	}
-	return _List_fromArray(arr);
-});
-
-var _List_sortBy = F2(function(f, xs)
-{
-	return _List_fromArray(_List_toArray(xs).sort(function(a, b) {
-		return _Utils_cmp(f(a), f(b));
-	}));
-});
-
-var _List_sortWith = F2(function(f, xs)
-{
-	return _List_fromArray(_List_toArray(xs).sort(function(a, b) {
-		var ord = A2(f, a, b);
-		return ord === elm$core$Basics$EQ ? 0 : ord === elm$core$Basics$LT ? -1 : 1;
-	}));
-});
 
 
 
@@ -4533,8 +4533,39 @@ function _Browser_load(url)
 var author$project$Chargen$Success = function (a) {
 	return {$: 'Success', a: a};
 };
-var elm$core$Basics$EQ = {$: 'EQ'};
-var elm$core$Basics$LT = {$: 'LT'};
+var elm$core$List$foldl = F3(
+	function (func, acc, list) {
+		foldl:
+		while (true) {
+			if (!list.b) {
+				return acc;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				var $temp$func = func,
+					$temp$acc = A2(func, x, acc),
+					$temp$list = xs;
+				func = $temp$func;
+				acc = $temp$acc;
+				list = $temp$list;
+				continue foldl;
+			}
+		}
+	});
+var elm$core$Basics$identity = function (x) {
+	return x;
+};
+var elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
+var elm$core$Dict$empty = elm$core$Dict$RBEmpty_elm_builtin;
+var elm$core$Set$Set_elm_builtin = function (a) {
+	return {$: 'Set_elm_builtin', a: a};
+};
+var elm$core$Set$empty = elm$core$Set$Set_elm_builtin(elm$core$Dict$empty);
+var elm$core$Dict$Black = {$: 'Black'};
+var elm$core$Dict$RBNode_elm_builtin = F5(
+	function (a, b, c, d, e) {
+		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
+	});
 var elm$core$Elm$JsArray$foldr = _JsArray_foldr;
 var elm$core$Array$foldr = F3(
 	function (func, baseCase, _n0) {
@@ -4556,6 +4587,8 @@ var elm$core$Array$foldr = F3(
 			A3(elm$core$Elm$JsArray$foldr, func, baseCase, tail),
 			tree);
 	});
+var elm$core$Basics$EQ = {$: 'EQ'};
+var elm$core$Basics$LT = {$: 'LT'};
 var elm$core$List$cons = _List_cons;
 var elm$core$Array$toList = function (array) {
 	return A3(elm$core$Array$foldr, elm$core$List$cons, _List_Nil, array);
@@ -4613,11 +4646,277 @@ var elm$core$Set$toList = function (_n0) {
 	var dict = _n0.a;
 	return elm$core$Dict$keys(dict);
 };
-var author$project$Chargen$allClasses = _List_fromArray(
-	['Assassin', 'Cleric', 'Druid', 'Fighter']);
-var author$project$Chargen$allRaces = _List_fromArray(
-	['Dwarf', 'Elf', 'Gnome']);
-var author$project$Chargen$defaultFormData = {count: 10, maxLevel: 20, minLevel: 1, selectedClasses: author$project$Chargen$allClasses, selectedRaces: author$project$Chargen$allRaces};
+var elm$core$Basics$compare = _Utils_compare;
+var elm$core$Dict$Red = {$: 'Red'};
+var elm$core$Dict$balance = F5(
+	function (color, key, value, left, right) {
+		if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
+			var _n1 = right.a;
+			var rK = right.b;
+			var rV = right.c;
+			var rLeft = right.d;
+			var rRight = right.e;
+			if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
+				var _n3 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var lLeft = left.d;
+				var lRight = left.e;
+				return A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					elm$core$Dict$Red,
+					key,
+					value,
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, lK, lV, lLeft, lRight),
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					color,
+					rK,
+					rV,
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, key, value, left, rLeft),
+					rRight);
+			}
+		} else {
+			if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
+				var _n5 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var _n6 = left.d;
+				var _n7 = _n6.a;
+				var llK = _n6.b;
+				var llV = _n6.c;
+				var llLeft = _n6.d;
+				var llRight = _n6.e;
+				var lRight = left.e;
+				return A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					elm$core$Dict$Red,
+					lK,
+					lV,
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, llK, llV, llLeft, llRight),
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, key, value, lRight, right));
+			} else {
+				return A5(elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
+			}
+		}
+	});
+var elm$core$Dict$insertHelp = F3(
+	function (key, value, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, key, value, elm$core$Dict$RBEmpty_elm_builtin, elm$core$Dict$RBEmpty_elm_builtin);
+		} else {
+			var nColor = dict.a;
+			var nKey = dict.b;
+			var nValue = dict.c;
+			var nLeft = dict.d;
+			var nRight = dict.e;
+			var _n1 = A2(elm$core$Basics$compare, key, nKey);
+			switch (_n1.$) {
+				case 'LT':
+					return A5(
+						elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						A3(elm$core$Dict$insertHelp, key, value, nLeft),
+						nRight);
+				case 'EQ':
+					return A5(elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
+				default:
+					return A5(
+						elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						nLeft,
+						A3(elm$core$Dict$insertHelp, key, value, nRight));
+			}
+		}
+	});
+var elm$core$Dict$insert = F3(
+	function (key, value, dict) {
+		var _n0 = A3(elm$core$Dict$insertHelp, key, value, dict);
+		if ((_n0.$ === 'RBNode_elm_builtin') && (_n0.a.$ === 'Red')) {
+			var _n1 = _n0.a;
+			var k = _n0.b;
+			var v = _n0.c;
+			var l = _n0.d;
+			var r = _n0.e;
+			return A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, k, v, l, r);
+		} else {
+			var x = _n0;
+			return x;
+		}
+	});
+var elm$core$Set$insert = F2(
+	function (key, _n0) {
+		var dict = _n0.a;
+		return elm$core$Set$Set_elm_builtin(
+			A3(elm$core$Dict$insert, key, _Utils_Tuple0, dict));
+	});
+var elm$core$Set$fromList = function (list) {
+	return A3(elm$core$List$foldl, elm$core$Set$insert, elm$core$Set$empty, list);
+};
+var author$project$Chargen$allRaces = elm$core$Set$fromList(
+	_List_fromArray(
+		['Dwarf', 'Elf', 'Gnome']));
+var elm$core$Basics$apL = F2(
+	function (f, x) {
+		return f(x);
+	});
+var elm$core$Dict$fromList = function (assocs) {
+	return A3(
+		elm$core$List$foldl,
+		F2(
+			function (_n0, dict) {
+				var key = _n0.a;
+				var value = _n0.b;
+				return A3(elm$core$Dict$insert, key, value, dict);
+			}),
+		elm$core$Dict$empty,
+		assocs);
+};
+var elm$core$Maybe$Just = function (a) {
+	return {$: 'Just', a: a};
+};
+var elm$core$Maybe$Nothing = {$: 'Nothing'};
+var elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _n1 = A2(elm$core$Basics$compare, targetKey, key);
+				switch (_n1.$) {
+					case 'LT':
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 'EQ':
+						return elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
+		}
+	});
+var elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var author$project$Chargen$raceAllowedClasses = function (race) {
+	return A2(
+		elm$core$Maybe$withDefault,
+		elm$core$Set$empty,
+		A2(
+			elm$core$Dict$get,
+			race,
+			elm$core$Dict$fromList(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'Dwarf',
+						elm$core$Set$fromList(
+							_List_fromArray(
+								['Assassin', 'Cleric', 'Fighter']))),
+						_Utils_Tuple2(
+						'Elf',
+						elm$core$Set$fromList(
+							_List_fromArray(
+								['Assassin', 'Cleric', 'Fighter']))),
+						_Utils_Tuple2(
+						'Gnome',
+						elm$core$Set$fromList(
+							_List_fromArray(
+								['Assassin', 'Cleric', 'Fighter'])))
+					]))));
+};
+var elm$core$Dict$foldl = F3(
+	function (func, acc, dict) {
+		foldl:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return acc;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var $temp$func = func,
+					$temp$acc = A3(
+					func,
+					key,
+					value,
+					A3(elm$core$Dict$foldl, func, acc, left)),
+					$temp$dict = right;
+				func = $temp$func;
+				acc = $temp$acc;
+				dict = $temp$dict;
+				continue foldl;
+			}
+		}
+	});
+var elm$core$Set$foldl = F3(
+	function (func, initialState, _n0) {
+		var dict = _n0.a;
+		return A3(
+			elm$core$Dict$foldl,
+			F3(
+				function (key, _n1, state) {
+					return A2(func, key, state);
+				}),
+			initialState,
+			dict);
+	});
+var elm$core$Dict$union = F2(
+	function (t1, t2) {
+		return A3(elm$core$Dict$foldl, elm$core$Dict$insert, t2, t1);
+	});
+var elm$core$Set$union = F2(
+	function (_n0, _n1) {
+		var dict1 = _n0.a;
+		var dict2 = _n1.a;
+		return elm$core$Set$Set_elm_builtin(
+			A2(elm$core$Dict$union, dict1, dict2));
+	});
+var author$project$Chargen$possibleCharacterClasses = function (selectedRaces) {
+	return A3(
+		elm$core$Set$foldl,
+		F2(
+			function (r, cls) {
+				return A2(
+					elm$core$Set$union,
+					cls,
+					author$project$Chargen$raceAllowedClasses(r));
+			}),
+		elm$core$Set$empty,
+		selectedRaces);
+};
+var author$project$Chargen$defaultFormData = {
+	count: 10,
+	maxLevel: 20,
+	minLevel: 1,
+	selectedClasses: author$project$Chargen$possibleCharacterClasses(author$project$Chargen$allRaces),
+	selectedRaces: author$project$Chargen$allRaces
+};
 var author$project$Chargen$GotCharacters = function (a) {
 	return {$: 'GotCharacters', a: a};
 };
@@ -4648,25 +4947,6 @@ var elm$core$Array$SubTree = function (a) {
 	return {$: 'SubTree', a: a};
 };
 var elm$core$Elm$JsArray$initializeFromList = _JsArray_initializeFromList;
-var elm$core$List$foldl = F3(
-	function (func, acc, list) {
-		foldl:
-		while (true) {
-			if (!list.b) {
-				return acc;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				var $temp$func = func,
-					$temp$acc = A2(func, x, acc),
-					$temp$list = xs;
-				func = $temp$func;
-				acc = $temp$acc;
-				list = $temp$list;
-				continue foldl;
-			}
-		}
-	});
 var elm$core$List$reverse = function (list) {
 	return A3(elm$core$List$foldl, elm$core$List$cons, _List_Nil, list);
 };
@@ -4714,10 +4994,6 @@ var elm$core$Array$treeFromBuilder = F2(
 		}
 	});
 var elm$core$Basics$add = _Basics_add;
-var elm$core$Basics$apL = F2(
-	function (f, x) {
-		return f(x);
-	});
 var elm$core$Basics$floor = _Basics_floor;
 var elm$core$Basics$gt = _Utils_gt;
 var elm$core$Basics$max = F2(
@@ -4793,10 +5069,6 @@ var elm$core$Array$initialize = F2(
 			return A5(elm$core$Array$initializeHelp, fn, initialFromIndex, len, _List_Nil, tail);
 		}
 	});
-var elm$core$Maybe$Just = function (a) {
-	return {$: 'Just', a: a};
-};
-var elm$core$Maybe$Nothing = {$: 'Nothing'};
 var elm$core$Result$Err = function (a) {
 	return {$: 'Err', a: a};
 };
@@ -5030,129 +5302,6 @@ var author$project$Chargen$Character = F5(
 	function (race, cClass, level, alignment, attributes) {
 		return {alignment: alignment, attributes: attributes, cClass: cClass, level: level, race: race};
 	});
-var elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
-var elm$core$Dict$empty = elm$core$Dict$RBEmpty_elm_builtin;
-var elm$core$Dict$Black = {$: 'Black'};
-var elm$core$Dict$RBNode_elm_builtin = F5(
-	function (a, b, c, d, e) {
-		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
-	});
-var elm$core$Basics$compare = _Utils_compare;
-var elm$core$Dict$Red = {$: 'Red'};
-var elm$core$Dict$balance = F5(
-	function (color, key, value, left, right) {
-		if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
-			var _n1 = right.a;
-			var rK = right.b;
-			var rV = right.c;
-			var rLeft = right.d;
-			var rRight = right.e;
-			if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
-				var _n3 = left.a;
-				var lK = left.b;
-				var lV = left.c;
-				var lLeft = left.d;
-				var lRight = left.e;
-				return A5(
-					elm$core$Dict$RBNode_elm_builtin,
-					elm$core$Dict$Red,
-					key,
-					value,
-					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, lK, lV, lLeft, lRight),
-					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, rK, rV, rLeft, rRight));
-			} else {
-				return A5(
-					elm$core$Dict$RBNode_elm_builtin,
-					color,
-					rK,
-					rV,
-					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, key, value, left, rLeft),
-					rRight);
-			}
-		} else {
-			if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
-				var _n5 = left.a;
-				var lK = left.b;
-				var lV = left.c;
-				var _n6 = left.d;
-				var _n7 = _n6.a;
-				var llK = _n6.b;
-				var llV = _n6.c;
-				var llLeft = _n6.d;
-				var llRight = _n6.e;
-				var lRight = left.e;
-				return A5(
-					elm$core$Dict$RBNode_elm_builtin,
-					elm$core$Dict$Red,
-					lK,
-					lV,
-					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, llK, llV, llLeft, llRight),
-					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, key, value, lRight, right));
-			} else {
-				return A5(elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
-			}
-		}
-	});
-var elm$core$Dict$insertHelp = F3(
-	function (key, value, dict) {
-		if (dict.$ === 'RBEmpty_elm_builtin') {
-			return A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, key, value, elm$core$Dict$RBEmpty_elm_builtin, elm$core$Dict$RBEmpty_elm_builtin);
-		} else {
-			var nColor = dict.a;
-			var nKey = dict.b;
-			var nValue = dict.c;
-			var nLeft = dict.d;
-			var nRight = dict.e;
-			var _n1 = A2(elm$core$Basics$compare, key, nKey);
-			switch (_n1.$) {
-				case 'LT':
-					return A5(
-						elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						A3(elm$core$Dict$insertHelp, key, value, nLeft),
-						nRight);
-				case 'EQ':
-					return A5(elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
-				default:
-					return A5(
-						elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						nLeft,
-						A3(elm$core$Dict$insertHelp, key, value, nRight));
-			}
-		}
-	});
-var elm$core$Dict$insert = F3(
-	function (key, value, dict) {
-		var _n0 = A3(elm$core$Dict$insertHelp, key, value, dict);
-		if ((_n0.$ === 'RBNode_elm_builtin') && (_n0.a.$ === 'Red')) {
-			var _n1 = _n0.a;
-			var k = _n0.b;
-			var v = _n0.c;
-			var l = _n0.d;
-			var r = _n0.e;
-			return A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, k, v, l, r);
-		} else {
-			var x = _n0;
-			return x;
-		}
-	});
-var elm$core$Dict$fromList = function (assocs) {
-	return A3(
-		elm$core$List$foldl,
-		F2(
-			function (_n0, dict) {
-				var key = _n0.a;
-				var value = _n0.b;
-				return A3(elm$core$Dict$insert, key, value, dict);
-			}),
-		elm$core$Dict$empty,
-		assocs);
-};
 var elm$json$Json$Decode$keyValuePairs = _Json_decodeKeyValuePairs;
 var elm$json$Json$Decode$map = _Json_map1;
 var elm$json$Json$Decode$dict = function (decoder) {
@@ -5186,15 +5335,6 @@ var author$project$Chargen$characterDecoder = A3(
 					elm$json$Json$Decode$string,
 					elm$json$Json$Decode$succeed(author$project$Chargen$Character))))));
 var elm$json$Json$Encode$int = _Json_wrap;
-var elm$json$Json$Encode$list = F2(
-	function (func, entries) {
-		return _Json_wrap(
-			A3(
-				elm$core$List$foldl,
-				_Json_addEntry(func),
-				_Json_emptyArray(_Utils_Tuple0),
-				entries));
-	});
 var elm$json$Json$Encode$object = function (pairs) {
 	return _Json_wrap(
 		A3(
@@ -5208,6 +5348,15 @@ var elm$json$Json$Encode$object = function (pairs) {
 			_Json_emptyObject(_Utils_Tuple0),
 			pairs));
 };
+var elm$json$Json$Encode$set = F2(
+	function (func, entries) {
+		return _Json_wrap(
+			A3(
+				elm$core$Set$foldl,
+				_Json_addEntry(func),
+				_Json_emptyArray(_Utils_Tuple0),
+				entries));
+	});
 var elm$json$Json$Encode$string = _Json_wrap;
 var author$project$Chargen$formDataEncode = function (form) {
 	return elm$json$Json$Encode$object(
@@ -5224,10 +5373,10 @@ var author$project$Chargen$formDataEncode = function (form) {
 				elm$json$Json$Encode$int(form.count)),
 				_Utils_Tuple2(
 				'selectedRaces',
-				A2(elm$json$Json$Encode$list, elm$json$Json$Encode$string, form.selectedRaces)),
+				A2(elm$json$Json$Encode$set, elm$json$Json$Encode$string, form.selectedRaces)),
 				_Utils_Tuple2(
 				'selectedClasses',
-				A2(elm$json$Json$Encode$list, elm$json$Json$Encode$string, form.selectedClasses))
+				A2(elm$json$Json$Encode$set, elm$json$Json$Encode$string, form.selectedClasses))
 			]));
 };
 var elm$core$Result$mapError = F2(
@@ -5245,40 +5394,6 @@ var elm$core$Basics$composeR = F3(
 	function (f, g, x) {
 		return g(
 			f(x));
-	});
-var elm$core$Basics$identity = function (x) {
-	return x;
-};
-var elm$core$Dict$get = F2(
-	function (targetKey, dict) {
-		get:
-		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return elm$core$Maybe$Nothing;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var _n1 = A2(elm$core$Basics$compare, targetKey, key);
-				switch (_n1.$) {
-					case 'LT':
-						var $temp$targetKey = targetKey,
-							$temp$dict = left;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-					case 'EQ':
-						return elm$core$Maybe$Just(value);
-					default:
-						var $temp$targetKey = targetKey,
-							$temp$dict = right;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-				}
-			}
-		}
 	});
 var elm$core$Dict$getMin = function (dict) {
 	getMin:
@@ -6030,15 +6145,6 @@ var author$project$Chargen$subscriptions = function (_n0) {
 	return elm$core$Platform$Sub$none;
 };
 var author$project$Chargen$Failure = {$: 'Failure'};
-var elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
 var elm$core$Platform$Cmd$batch = _Platform_batch;
 var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
 var elm$core$String$toInt = _String_toInt;
@@ -6075,7 +6181,9 @@ var author$project$Chargen$update = F2(
 					var changeRaces = function (form) {
 						return _Utils_update(
 							form,
-							{selectedRaces: newRaces});
+							{
+								selectedRaces: elm$core$Set$fromList(newRaces)
+							});
 					};
 					return _Utils_Tuple2(
 						author$project$Chargen$Success(
@@ -6090,7 +6198,9 @@ var author$project$Chargen$update = F2(
 					var changeClasses = function (form) {
 						return _Utils_update(
 							form,
-							{selectedClasses: newClasses});
+							{
+								selectedClasses: elm$core$Set$fromList(newClasses)
+							});
 					};
 					return _Utils_Tuple2(
 						author$project$Chargen$Success(
@@ -6494,6 +6604,9 @@ var author$project$Chargen$GenerateCharacters = function (a) {
 var author$project$Chargen$RaceSelectionChanged = function (a) {
 	return {$: 'RaceSelectionChanged', a: a};
 };
+var author$project$Chargen$allClasses = elm$core$Set$fromList(
+	_List_fromArray(
+		['Assassin', 'Cleric', 'Druid', 'Fighter']));
 var elm$html$Html$input = _VirtualDom_node('input');
 var elm$html$Html$label = _VirtualDom_node('label');
 var elm$html$Html$Attributes$max = elm$html$Html$Attributes$stringProperty('max');
@@ -6562,14 +6675,33 @@ var author$project$Chargen$levelNumber = F5(
 					_List_Nil)
 				]));
 	});
-var author$project$Chargen$optionsFromList = function (races) {
-	return A2(
-		elm$core$List$map,
-		function (s) {
-			return {enabled: true, text: s, value: s};
-		},
-		races);
-};
+var elm$core$Dict$member = F2(
+	function (key, dict) {
+		var _n0 = A2(elm$core$Dict$get, key, dict);
+		if (_n0.$ === 'Just') {
+			return true;
+		} else {
+			return false;
+		}
+	});
+var elm$core$Set$member = F2(
+	function (key, _n0) {
+		var dict = _n0.a;
+		return A2(elm$core$Dict$member, key, dict);
+	});
+var author$project$Chargen$optionsFromSet = F2(
+	function (allOptions, allowedValues) {
+		return A2(
+			elm$core$List$map,
+			function (s) {
+				return {
+					enabled: A2(elm$core$Set$member, s, allowedValues),
+					text: s,
+					value: s
+				};
+			},
+			elm$core$Set$toList(allOptions));
+	});
 var elm$html$Html$button = _VirtualDom_node('button');
 var elm$html$Html$div = _VirtualDom_node('div');
 var elm$html$Html$fieldset = _VirtualDom_node('fieldset');
@@ -6634,7 +6766,7 @@ var author$project$Chargen$formView = function (form) {
 											A3(
 											abadi199$elm_input_extra$MultiSelect$multiSelect,
 											{
-												items: author$project$Chargen$optionsFromList(author$project$Chargen$allRaces),
+												items: A2(author$project$Chargen$optionsFromSet, author$project$Chargen$allRaces, author$project$Chargen$allRaces),
 												onChange: author$project$Chargen$RaceSelectionChanged
 											},
 											_List_fromArray(
@@ -6642,7 +6774,7 @@ var author$project$Chargen$formView = function (form) {
 													elm$html$Html$Attributes$class('pure-u-4-5'),
 													elm$html$Html$Attributes$required(true)
 												]),
-											form.selectedRaces)
+											elm$core$Set$toList(form.selectedRaces))
 										])),
 									A2(
 									elm$html$Html$label,
@@ -6653,7 +6785,10 @@ var author$project$Chargen$formView = function (form) {
 											A3(
 											abadi199$elm_input_extra$MultiSelect$multiSelect,
 											{
-												items: author$project$Chargen$optionsFromList(author$project$Chargen$allClasses),
+												items: A2(
+													author$project$Chargen$optionsFromSet,
+													author$project$Chargen$allClasses,
+													author$project$Chargen$possibleCharacterClasses(form.selectedRaces)),
 												onChange: author$project$Chargen$ClassSelectionChanged
 											},
 											_List_fromArray(
@@ -6661,7 +6796,7 @@ var author$project$Chargen$formView = function (form) {
 													elm$html$Html$Attributes$class('pure-u-4-5'),
 													elm$html$Html$Attributes$required(true)
 												]),
-											form.selectedClasses)
+											elm$core$Set$toList(form.selectedClasses))
 										])),
 									A5(author$project$Chargen$levelNumber, 'Character count', form.count, 1, 100, author$project$Chargen$ChangeCount)
 								]))),
@@ -6704,8 +6839,14 @@ var elm$core$String$concat = function (strings) {
 };
 var author$project$Chargen$showFormData = function (data) {
 	return 'FormData\n{ minLevel = ' + (elm$core$String$fromInt(data.minLevel) + ('\n, maxLevel = ' + (elm$core$String$fromInt(data.maxLevel) + ('\n, count = ' + (elm$core$String$fromInt(data.count) + ('\n, selectedRaces = ' + (elm$core$String$concat(
-		A2(elm$core$List$intersperse, ', ', data.selectedRaces)) + ('\n, selectedClasses = ' + (elm$core$String$concat(
-		A2(elm$core$List$intersperse, ', ', data.selectedClasses)) + '\n}\n')))))))));
+		A2(
+			elm$core$List$intersperse,
+			', ',
+			elm$core$Set$toList(data.selectedRaces))) + ('\n, selectedClasses = ' + (elm$core$String$concat(
+		A2(
+			elm$core$List$intersperse,
+			', ',
+			elm$core$Set$toList(data.selectedClasses))) + '\n}\n')))))))));
 };
 var elm$html$Html$h2 = _VirtualDom_node('h2');
 var elm$html$Html$pre = _VirtualDom_node('pre');

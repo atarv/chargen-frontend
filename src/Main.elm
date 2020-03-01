@@ -11,6 +11,7 @@ import Json.Decode.Pipeline exposing (required)
 import Json.Encode as Encode
 import Maybe exposing (withDefault)
 import MultiSelect exposing (Item, multiSelect)
+import Set as Set exposing (Set)
 
 
 
@@ -46,11 +47,14 @@ type alias FormData =
     { minLevel : Int
     , maxLevel : Int
     , count : Int
-    , selectedRaces : List String
-    , selectedClasses : List String
+    , selectedRaces : Set String
+    , selectedClasses : Set String
     }
 
-type alias Attributes = Dict String Int
+
+type alias Attributes =
+    Dict String Int
+
 
 type alias Character =
     { race : String
@@ -59,7 +63,6 @@ type alias Character =
     , alignment : String
     , attributes : Attributes
     }
-
 
 
 showFormData : FormData -> String
@@ -71,30 +74,39 @@ showFormData data =
         ++ "\n, count = "
         ++ String.fromInt data.count
         ++ "\n, selectedRaces = "
-        ++ String.concat (List.intersperse ", " data.selectedRaces)
+        ++ String.concat
+            (List.intersperse ", " <| Set.toList data.selectedRaces)
         ++ "\n, selectedClasses = "
-        ++ String.concat (List.intersperse ", " data.selectedClasses)
+        ++ String.concat
+            (List.intersperse ", " <| Set.toList data.selectedClasses)
         ++ "\n}\n"
 
 
-allRaces : List String
+allRaces : Set String
 allRaces =
-    [ "Dwarf", "Elf", "Gnome" ]
+    Set.fromList [ "Dwarf", "Elf", "Gnome" ]
 
 
-allClasses : List String
+allClasses : Set String
 allClasses =
-    [ "Assassin", "Cleric", "Druid", "Fighter" ]
+    Set.fromList [ "Assassin", "Cleric", "Druid", "Fighter" ]
 
 
 defaultFormData : FormData
 defaultFormData =
-    { minLevel = 1, maxLevel = 20, selectedRaces = allRaces, selectedClasses = allClasses, count = 10 }
+    { minLevel = 1
+    , maxLevel = 20
+    , selectedRaces = allRaces
+    , selectedClasses = possibleCharacterClasses allRaces
+    , count = 10
+    }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Success { form = defaultFormData, characters = [] }, getRandomCharacters defaultFormData )
+    ( Success { form = defaultFormData, characters = [] }
+    , getRandomCharacters defaultFormData
+    )
 
 
 
@@ -138,14 +150,14 @@ update msg model =
                 RaceSelectionChanged newRaces ->
                     let
                         changeRaces =
-                            \form -> { form | selectedRaces = newRaces }
+                            \form -> { form | selectedRaces = Set.fromList newRaces }
                     in
                     ( Success { content | form = changeRaces content.form }, Cmd.none )
 
                 ClassSelectionChanged newClasses ->
                     let
                         changeClasses =
-                            \form -> { form | selectedClasses = newClasses }
+                            \form -> { form | selectedClasses = Set.fromList newClasses }
                     in
                     ( Success { content | form = changeClasses content.form }, Cmd.none )
 
@@ -194,7 +206,7 @@ view model =
             div [ class "content" ]
                 [ h2 [ id "app-header" ] [ text "OSRIC Random Character Generator" ]
                 , formView form
-                , pre [] [ text (showFormData form) ]
+                , pre [] [ text (showFormData form) ] -- DEBUG:
                 , div [] [ characterListView characters ]
                 ]
 
@@ -215,20 +227,24 @@ formView form =
                     , label []
                         [ text "Races"
                         , multiSelect
-                            { items = optionsFromList allRaces
+                            { items = optionsFromSet allRaces allRaces
                             , onChange = RaceSelectionChanged
                             }
                             [ class "pure-u-4-5", Html.Attributes.required True ]
-                            form.selectedRaces
+                          <|
+                            Set.toList form.selectedRaces
                         ]
                     , label []
                         [ text "Classes"
                         , multiSelect
-                            { items = optionsFromList allClasses
+                            { items =
+                                optionsFromSet allClasses <|
+                                    possibleCharacterClasses form.selectedRaces
                             , onChange = ClassSelectionChanged
                             }
                             [ class "pure-u-4-5", Html.Attributes.required True ]
-                            form.selectedClasses
+                          <|
+                            Set.toList form.selectedClasses
                         ]
                     , levelNumber "Character count" form.count 1 100 ChangeCount
                     ]
@@ -243,9 +259,31 @@ formView form =
         ]
 
 
-optionsFromList : List String -> List Item
-optionsFromList races =
-    List.map (\s -> { value = s, text = s, enabled = True }) races
+optionsFromSet : Set String -> Set String -> List Item
+optionsFromSet allOptions allowedValues =
+    List.map
+        (\s -> { value = s, text = s, enabled = Set.member s allowedValues })
+    <|
+        Set.toList allOptions
+
+
+possibleCharacterClasses : Set String -> Set String
+possibleCharacterClasses selectedRaces =
+    Set.foldl
+        (\r cls -> Set.union cls <| raceAllowedClasses r)
+        Set.empty
+        selectedRaces
+
+
+raceAllowedClasses : String -> Set String
+raceAllowedClasses race =
+    withDefault Set.empty <|
+        Dict.get race <|
+            Dict.fromList
+                [ ( "Dwarf", Set.fromList [ "Assassin", "Cleric", "Fighter" ] )
+                , ( "Elf", Set.fromList [ "Assassin", "Cleric", "Fighter" ] )
+                , ( "Gnome", Set.fromList [ "Assassin", "Cleric", "Fighter" ] )
+                ]
 
 
 levelNumber : String -> Int -> Int -> Int -> (String -> Msg) -> Html Msg
@@ -350,6 +388,6 @@ formDataEncode form =
         [ ( "minLevel", Encode.int form.minLevel )
         , ( "maxLevel", Encode.int form.maxLevel )
         , ( "count", Encode.int form.count )
-        , ( "selectedRaces", Encode.list Encode.string form.selectedRaces )
-        , ( "selectedClasses", Encode.list Encode.string form.selectedClasses )
+        , ( "selectedRaces", Encode.set Encode.string form.selectedRaces )
+        , ( "selectedClasses", Encode.set Encode.string form.selectedClasses )
         ]
