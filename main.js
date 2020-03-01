@@ -4911,6 +4911,7 @@ var author$project$Chargen$possibleCharacterClasses = function (selectedRaces) {
 		selectedRaces);
 };
 var author$project$Chargen$defaultFormData = {
+	attributeGen: 0,
 	count: 10,
 	maxLevel: 20,
 	minLevel: 1,
@@ -5376,7 +5377,10 @@ var author$project$Chargen$formDataEncode = function (form) {
 				A2(elm$json$Json$Encode$set, elm$json$Json$Encode$string, form.selectedRaces)),
 				_Utils_Tuple2(
 				'selectedClasses',
-				A2(elm$json$Json$Encode$set, elm$json$Json$Encode$string, form.selectedClasses))
+				A2(elm$json$Json$Encode$set, elm$json$Json$Encode$string, form.selectedClasses)),
+				_Utils_Tuple2(
+				'attributeGen',
+				elm$json$Json$Encode$int(form.attributeGen))
 			]));
 };
 var elm$core$Result$mapError = F2(
@@ -6248,6 +6252,26 @@ var author$project$Chargen$update = F2(
 									form: changeClasses(content.form)
 								})),
 						elm$core$Platform$Cmd$none);
+				case 'ChangeAttributeGen':
+					var method = msg.a;
+					var changeAttGen = function (form) {
+						return _Utils_update(
+							form,
+							{
+								attributeGen: A2(
+									elm$core$Maybe$withDefault,
+									0,
+									elm$core$String$toInt(method))
+							});
+					};
+					return _Utils_Tuple2(
+						author$project$Chargen$Success(
+							_Utils_update(
+								content,
+								{
+									form: changeAttGen(content.form)
+								})),
+						elm$core$Platform$Cmd$none);
 				case 'ChangeMinLevel':
 					var lvl = msg.a;
 					var changeLevel = function (form) {
@@ -6648,16 +6672,16 @@ var author$project$Chargen$RaceSelectionChanged = function (a) {
 var author$project$Chargen$allClasses = elm$core$Set$fromList(
 	_List_fromArray(
 		['Assassin', 'Cleric', 'Druid', 'Fighter']));
+var author$project$Chargen$ChangeAttributeGen = function (a) {
+	return {$: 'ChangeAttributeGen', a: a};
+};
+var elm$html$Html$div = _VirtualDom_node('div');
 var elm$html$Html$input = _VirtualDom_node('input');
 var elm$html$Html$label = _VirtualDom_node('label');
-var elm$html$Html$Attributes$max = elm$html$Html$Attributes$stringProperty('max');
-var elm$html$Html$Attributes$min = elm$html$Html$Attributes$stringProperty('min');
-var elm$html$Html$Attributes$size = function (n) {
-	return A2(
-		_VirtualDom_attribute,
-		'size',
-		elm$core$String$fromInt(n));
-};
+var elm$html$Html$Attributes$checked = elm$html$Html$Attributes$boolProperty('checked');
+var elm$html$Html$Attributes$for = elm$html$Html$Attributes$stringProperty('htmlFor');
+var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
+var elm$html$Html$Attributes$name = elm$html$Html$Attributes$stringProperty('name');
 var elm$html$Html$Attributes$type_ = elm$html$Html$Attributes$stringProperty('type');
 var elm$html$Html$Events$alwaysStop = function (x) {
 	return _Utils_Tuple2(x, true);
@@ -6689,6 +6713,75 @@ var elm$html$Html$Events$onInput = function (tagger) {
 			elm$json$Json$Decode$map,
 			elm$html$Html$Events$alwaysStop,
 			A2(elm$json$Json$Decode$map, tagger, elm$html$Html$Events$targetValue)));
+};
+var author$project$Chargen$attributeGenChooser = function (current) {
+	return A2(
+		elm$html$Html$label,
+		_List_Nil,
+		_List_fromArray(
+			[
+				elm$html$Html$text('Attribute generation method'),
+				A2(
+				elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2(
+						elm$html$Html$label,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$for('3d6'),
+								elm$html$Html$Attributes$class('pure-radio')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								elm$html$Html$input,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$type_('radio'),
+										elm$html$Html$Attributes$id('3d6'),
+										elm$html$Html$Attributes$name('attributeGen'),
+										elm$html$Html$Attributes$value('0'),
+										elm$html$Html$Attributes$checked(!current),
+										elm$html$Html$Events$onInput(author$project$Chargen$ChangeAttributeGen)
+									]),
+								_List_Nil),
+								elm$html$Html$text('3D6')
+							])),
+						A2(
+						elm$html$Html$label,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$for('4d6bof3'),
+								elm$html$Html$Attributes$class('pure-radio')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								elm$html$Html$input,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$type_('radio'),
+										elm$html$Html$Attributes$id('4d6bof3'),
+										elm$html$Html$Attributes$name('attributeGen'),
+										elm$html$Html$Attributes$value('1'),
+										elm$html$Html$Attributes$checked(current === 1),
+										elm$html$Html$Events$onInput(author$project$Chargen$ChangeAttributeGen)
+									]),
+								_List_Nil),
+								elm$html$Html$text('4D6 best of 3')
+							]))
+					]))
+			]));
+};
+var elm$html$Html$Attributes$max = elm$html$Html$Attributes$stringProperty('max');
+var elm$html$Html$Attributes$min = elm$html$Html$Attributes$stringProperty('min');
+var elm$html$Html$Attributes$size = function (n) {
+	return A2(
+		_VirtualDom_attribute,
+		'size',
+		elm$core$String$fromInt(n));
 };
 var author$project$Chargen$levelNumber = F5(
 	function (txt, val, min, max, action) {
@@ -6812,7 +6905,6 @@ var elm$core$List$isEmpty = function (xs) {
 	}
 };
 var elm$html$Html$button = _VirtualDom_node('button');
-var elm$html$Html$div = _VirtualDom_node('div');
 var elm$html$Html$fieldset = _VirtualDom_node('fieldset');
 var elm$html$Html$form = _VirtualDom_node('form');
 var elm$html$Html$legend = _VirtualDom_node('legend');
@@ -6917,7 +7009,8 @@ var author$project$Chargen$formView = function (form) {
 												]),
 											elm$core$Set$toList(form.selectedClasses))
 										])),
-									A5(author$project$Chargen$levelNumber, 'Character count', form.count, 1, 100, author$project$Chargen$ChangeCount)
+									A5(author$project$Chargen$levelNumber, 'Character count', form.count, 1, 100, author$project$Chargen$ChangeCount),
+									author$project$Chargen$attributeGenChooser(form.attributeGen)
 								]))),
 						A2(
 						elm$html$Html$div,
@@ -6986,11 +7079,10 @@ var author$project$Chargen$showFormData = function (data) {
 		A2(
 			elm$core$List$intersperse,
 			', ',
-			elm$core$Set$toList(data.selectedClasses))) + '\n}\n')))))))));
+			elm$core$Set$toList(data.selectedClasses))) + ('\n, attributeGen = ' + (elm$core$String$fromInt(data.attributeGen) + '\n}\n')))))))))));
 };
 var elm$html$Html$h2 = _VirtualDom_node('h2');
 var elm$html$Html$pre = _VirtualDom_node('pre');
-var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
 var author$project$Chargen$view = function (model) {
 	if (model.$ === 'Success') {
 		var form = model.a.form;

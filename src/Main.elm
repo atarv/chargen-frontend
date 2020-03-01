@@ -50,6 +50,7 @@ type alias FormData =
     , count : Int
     , selectedRaces : Set String
     , selectedClasses : Set String
+    , attributeGen : Int
     }
 
 
@@ -80,6 +81,8 @@ showFormData data =
         ++ "\n, selectedClasses = "
         ++ String.concat
             (List.intersperse ", " <| Set.toList data.selectedClasses)
+        ++ "\n, attributeGen = "
+        ++ String.fromInt data.attributeGen
         ++ "\n}\n"
 
 
@@ -100,6 +103,7 @@ defaultFormData =
     , selectedRaces = allRaces
     , selectedClasses = possibleCharacterClasses allRaces
     , count = 10
+    , attributeGen = 0
     }
 
 
@@ -118,6 +122,7 @@ type Msg
     = Reset
     | RaceSelectionChanged (List String)
     | ClassSelectionChanged (List String)
+    | ChangeAttributeGen String
     | ChangeMaxLevel String
     | ChangeMinLevel String
     | ChangeCount String
@@ -178,6 +183,13 @@ update msg model =
                             \form -> { form | selectedClasses = Set.fromList newClasses }
                     in
                     ( Success { content | form = changeClasses content.form }, Cmd.none )
+
+                ChangeAttributeGen method ->
+                    let
+                        changeAttGen =
+                            \form -> { form | attributeGen = Maybe.withDefault 0 (String.toInt method) }
+                    in
+                    ( Success { content | form = changeAttGen content.form }, Cmd.none )
 
                 ChangeMinLevel lvl ->
                     let
@@ -281,6 +293,7 @@ formView form =
                             Set.toList form.selectedClasses
                         ]
                     , levelNumber "Character count" form.count 1 100 ChangeCount
+                    , attributeGenChooser form.attributeGen
                     ]
                 )
             , div [ class "centered" ]
@@ -394,6 +407,39 @@ getAttribute attributes name =
     withDefault -1 <| get name attributes
 
 
+attributeGenChooser : Int -> Html Msg
+attributeGenChooser current =
+    label []
+        [ text "Attribute generation method"
+        , div []
+            [ label [ for "3d6", class "pure-radio" ]
+                [ input
+                    [ type_ "radio"
+                    , id "3d6"
+                    , name "attributeGen"
+                    , value "0"
+                    , checked (current == 0)
+                    , onInput ChangeAttributeGen
+                    ]
+                    []
+                , text "3D6"
+                ]
+            , label [ for "4d6bof3", class "pure-radio" ]
+                [ input
+                    [ type_ "radio"
+                    , id "4d6bof3"
+                    , name "attributeGen"
+                    , value "1"
+                    , checked (current == 1)
+                    , onInput ChangeAttributeGen
+                    ]
+                    []
+                , text "4D6 best of 3"
+                ]
+            ]
+        ]
+
+
 {-| Returns `Nothing`, if form is valid, otherwise an error message is returned.
 -}
 validateForm : FormData -> List String
@@ -459,4 +505,5 @@ formDataEncode form =
         , ( "count", Encode.int form.count )
         , ( "selectedRaces", Encode.set Encode.string form.selectedRaces )
         , ( "selectedClasses", Encode.set Encode.string form.selectedClasses )
+        , ( "attributeGen", Encode.int form.attributeGen )
         ]
