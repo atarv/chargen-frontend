@@ -6145,6 +6145,21 @@ var author$project$Chargen$subscriptions = function (_n0) {
 	return elm$core$Platform$Sub$none;
 };
 var author$project$Chargen$Failure = {$: 'Failure'};
+var author$project$Chargen$GotMoreCharacters = function (a) {
+	return {$: 'GotMoreCharacters', a: a};
+};
+var author$project$Chargen$getMoreRandomCharacters = function (form) {
+	return elm$http$Http$post(
+		{
+			body: elm$http$Http$jsonBody(
+				author$project$Chargen$formDataEncode(form)),
+			expect: A2(
+				elm$http$Http$expectJson,
+				author$project$Chargen$GotMoreCharacters,
+				elm$json$Json$Decode$list(author$project$Chargen$characterDecoder)),
+			url: 'http://localhost:8080/character'
+		});
+};
 var elm$core$Platform$Cmd$batch = _Platform_batch;
 var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
 var elm$core$String$toInt = _String_toInt;
@@ -6160,6 +6175,11 @@ var author$project$Chargen$update = F2(
 					return _Utils_Tuple2(
 						model,
 						author$project$Chargen$getRandomCharacters(form));
+				case 'GenerateMoreCharacters':
+					var form = msg.a;
+					return _Utils_Tuple2(
+						model,
+						author$project$Chargen$getMoreRandomCharacters(form));
 				case 'GotCharacters':
 					var httpResult = msg.a;
 					if (httpResult.$ === 'Ok') {
@@ -6168,6 +6188,24 @@ var author$project$Chargen$update = F2(
 							return _Utils_update(
 								mod,
 								{characters: newChars});
+						};
+						return _Utils_Tuple2(
+							author$project$Chargen$Success(
+								changeChars(content)),
+							elm$core$Platform$Cmd$none);
+					} else {
+						return _Utils_Tuple2(author$project$Chargen$Failure, elm$core$Platform$Cmd$none);
+					}
+				case 'GotMoreCharacters':
+					var httpResult = msg.a;
+					if (httpResult.$ === 'Ok') {
+						var newChars = httpResult.a;
+						var changeChars = function (mod) {
+							return _Utils_update(
+								mod,
+								{
+									characters: _Utils_ap(mod.characters, newChars)
+								});
 						};
 						return _Utils_Tuple2(
 							author$project$Chargen$Success(
@@ -6275,6 +6313,9 @@ var author$project$Chargen$update = F2(
 			return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 		}
 	});
+var author$project$Chargen$GenerateMoreCharacters = function (a) {
+	return {$: 'GenerateMoreCharacters', a: a};
+};
 var elm$core$Basics$negate = function (n) {
 	return -n;
 };
@@ -6702,11 +6743,80 @@ var author$project$Chargen$optionsFromSet = F2(
 			},
 			elm$core$Set$toList(allOptions));
 	});
+var elm$core$Dict$isEmpty = function (dict) {
+	if (dict.$ === 'RBEmpty_elm_builtin') {
+		return true;
+	} else {
+		return false;
+	}
+};
+var elm$core$Set$isEmpty = function (_n0) {
+	var dict = _n0.a;
+	return elm$core$Dict$isEmpty(dict);
+};
+var elm$core$Tuple$second = function (_n0) {
+	var y = _n0.b;
+	return y;
+};
+var author$project$Chargen$validateForm = function (data) {
+	return A2(
+		elm$core$List$map,
+		elm$core$Tuple$second,
+		A2(
+			elm$core$List$filter,
+			function (_n0) {
+				var b = _n0.a;
+				return b;
+			},
+			_List_fromArray(
+				[
+					_Utils_Tuple2(
+					elm$core$Set$isEmpty(data.selectedRaces),
+					'Select at least one race'),
+					_Utils_Tuple2(
+					elm$core$Set$isEmpty(data.selectedClasses),
+					'Select at least one class'),
+					_Utils_Tuple2(
+					!(_Utils_cmp(data.minLevel, data.maxLevel) < 1),
+					'Min level must be lesser than or equal to max level'),
+					_Utils_Tuple2(
+					A2(
+						elm$core$List$any,
+						function (i) {
+							return i < 1;
+						},
+						_List_fromArray(
+							[data.minLevel, data.maxLevel, data.count])),
+					'All form fields must be positive')
+				])));
+};
+var elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return elm$core$Maybe$Just(x);
+	} else {
+		return elm$core$Maybe$Nothing;
+	}
+};
+var elm$core$List$isEmpty = function (xs) {
+	if (!xs.b) {
+		return true;
+	} else {
+		return false;
+	}
+};
 var elm$html$Html$button = _VirtualDom_node('button');
 var elm$html$Html$div = _VirtualDom_node('div');
 var elm$html$Html$fieldset = _VirtualDom_node('fieldset');
 var elm$html$Html$form = _VirtualDom_node('form');
 var elm$html$Html$legend = _VirtualDom_node('legend');
+var elm$html$Html$Attributes$hidden = elm$html$Html$Attributes$boolProperty('hidden');
 var elm$html$Html$Attributes$required = elm$html$Html$Attributes$boolProperty('required');
 var elm$html$Html$Events$onClick = function (msg) {
 	return A2(
@@ -6715,6 +6825,15 @@ var elm$html$Html$Events$onClick = function (msg) {
 		elm$json$Json$Decode$succeed(msg));
 };
 var author$project$Chargen$formView = function (form) {
+	var isInError = A2(
+		elm$core$Basics$composeL,
+		A2(elm$core$Basics$composeL, elm$core$Basics$not, elm$core$List$isEmpty),
+		author$project$Chargen$validateForm)(form);
+	var errorMessage = A2(
+		elm$core$Maybe$withDefault,
+		'',
+		elm$core$List$head(
+			author$project$Chargen$validateForm(form)));
 	return A2(
 		elm$html$Html$form,
 		_List_fromArray(
@@ -6801,17 +6920,38 @@ var author$project$Chargen$formView = function (form) {
 									A5(author$project$Chargen$levelNumber, 'Character count', form.count, 1, 100, author$project$Chargen$ChangeCount)
 								]))),
 						A2(
-						elm$html$Html$button,
+						elm$html$Html$div,
 						_List_fromArray(
 							[
-								elm$html$Html$Attributes$class('pure-button'),
-								elm$html$Html$Events$onClick(
-								author$project$Chargen$GenerateCharacters(form)),
-								elm$html$Html$Attributes$type_('button')
+								elm$html$Html$Attributes$class('centered')
 							]),
 						_List_fromArray(
 							[
-								elm$html$Html$text('Generate')
+								A2(
+								elm$html$Html$div,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$class('error-message'),
+										elm$html$Html$Attributes$hidden(!isInError)
+									]),
+								_List_fromArray(
+									[
+										elm$html$Html$text(errorMessage)
+									])),
+								A2(
+								elm$html$Html$button,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$class('pure-button'),
+										elm$html$Html$Events$onClick(
+										author$project$Chargen$GenerateCharacters(form)),
+										elm$html$Html$Attributes$type_('button'),
+										elm$html$Html$Attributes$disabled(isInError)
+									]),
+								_List_fromArray(
+									[
+										elm$html$Html$text('Generate')
+									]))
 							]))
 					]))
 			]));
@@ -6888,6 +7028,34 @@ var author$project$Chargen$view = function (model) {
 					_List_fromArray(
 						[
 							author$project$Chargen$characterListView(characters)
+						])),
+					A2(
+					elm$html$Html$div,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('centered')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$button,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('pure-button'),
+									elm$html$Html$Events$onClick(
+									author$project$Chargen$GenerateMoreCharacters(form)),
+									A2(
+									elm$core$Basics$composeL,
+									A2(
+										elm$core$Basics$composeL,
+										A2(elm$core$Basics$composeL, elm$html$Html$Attributes$disabled, elm$core$Basics$not),
+										elm$core$List$isEmpty),
+									author$project$Chargen$validateForm)(form)
+								]),
+							_List_fromArray(
+								[
+									elm$html$Html$text('Generate more')
+								]))
 						]))
 				]));
 	} else {

@@ -4,7 +4,7 @@ import Browser
 import Dict exposing (Dict, get)
 import Html exposing (Html, div, fieldset, h2, input, label, legend, pre, table, tbody, td, text, th, thead, tr)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onInput)
+import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode as Decode exposing (Decoder, int, string)
 import Json.Decode.Pipeline exposing (required)
@@ -12,6 +12,7 @@ import Json.Encode as Encode
 import Maybe exposing (withDefault)
 import MultiSelect exposing (Item, multiSelect)
 import Set as Set exposing (Set)
+import Tuple exposing (second)
 
 
 
@@ -121,7 +122,9 @@ type Msg
     | ChangeMinLevel String
     | ChangeCount String
     | GenerateCharacters FormData
+    | GenerateMoreCharacters FormData
     | GotCharacters (Result Http.Error (List Character))
+    | GotMoreCharacters (Result Http.Error (List Character))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -135,12 +138,27 @@ update msg model =
                 GenerateCharacters form ->
                     ( model, getRandomCharacters form )
 
+                GenerateMoreCharacters form ->
+                    ( model, getMoreRandomCharacters form )
+
                 GotCharacters httpResult ->
                     case httpResult of
                         Ok newChars ->
                             let
                                 changeChars =
                                     \mod -> { mod | characters = newChars }
+                            in
+                            ( Success (changeChars content), Cmd.none )
+
+                        Err _ ->
+                            ( Failure, Cmd.none )
+
+                GotMoreCharacters httpResult ->
+                    case httpResult of
+                        Ok newChars ->
+                            let
+                                changeChars =
+                                    \mod -> { mod | characters = mod.characters ++ newChars }
                             in
                             ( Success (changeChars content), Cmd.none )
 
@@ -208,6 +226,15 @@ view model =
                 , formView form
                 , pre [] [ text (showFormData form) ] -- DEBUG:
                 , div [] [ characterListView characters ]
+                , div [ class "centered" ]
+                    [ Html.button
+                        [ class "pure-button"
+                        , onClick <| GenerateMoreCharacters form
+                        , (disabled << not << List.isEmpty << validateForm) form
+                        ]
+                        [ text "Generate more"
+                        ]
+                    ]
                 ]
 
         _ ->
@@ -216,6 +243,13 @@ view model =
 
 formView : FormData -> Html Msg
 formView form =
+    let
+        isInError =
+            (not << List.isEmpty << validateForm) form
+
+        errorMessage =
+            withDefault "" <| List.head (validateForm form)
+    in
     Html.form [ class "pure-form pure-form-stacked" ]
         [ fieldset []
             [ legend [] [ text "Character generation constraints" ]
@@ -249,12 +283,17 @@ formView form =
                     , levelNumber "Character count" form.count 1 100 ChangeCount
                     ]
                 )
-            , Html.button
-                [ class "pure-button"
-                , Html.Events.onClick (GenerateCharacters form)
-                , type_ "button"
+            , div [ class "centered" ]
+                [ div [ class "error-message", hidden (not isInError) ]
+                    [ text errorMessage ]
+                , Html.button
+                    [ class "pure-button"
+                    , onClick (GenerateCharacters form)
+                    , type_ "button"
+                    , disabled isInError
+                    ]
+                    [ text "Generate" ]
                 ]
-                [ text "Generate" ]
             ]
         ]
 
@@ -355,6 +394,27 @@ getAttribute attributes name =
     withDefault -1 <| get name attributes
 
 
+{-| Returns `Nothing`, if form is valid, otherwise an error message is returned.
+-}
+validateForm : FormData -> List String
+validateForm data =
+    List.map second <|
+        List.filter (\( b, _ ) -> b)
+            [ ( Set.isEmpty data.selectedRaces
+              , "Select at least one race"
+              )
+            , ( Set.isEmpty data.selectedClasses
+              , "Select at least one class"
+              )
+            , ( not <| data.minLevel <= data.maxLevel
+              , "Min level must be lesser than or equal to max level"
+              )
+            , ( List.any (\i -> i < 1) [ data.minLevel, data.maxLevel, data.count ]
+              , "All form fields must be positive"
+              )
+            ]
+
+
 
 -- HTTP
 
@@ -365,6 +425,15 @@ getRandomCharacters form =
         { url = "http://localhost:8080/character"
         , body = Http.jsonBody <| formDataEncode form
         , expect = Http.expectJson GotCharacters (Decode.list characterDecoder)
+        }
+
+
+getMoreRandomCharacters : FormData -> Cmd Msg
+getMoreRandomCharacters form =
+    Http.post
+        { url = "http://localhost:8080/character"
+        , body = Http.jsonBody <| formDataEncode form
+        , expect = Http.expectJson GotMoreCharacters (Decode.list characterDecoder)
         }
 
 
