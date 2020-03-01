@@ -1,6 +1,7 @@
 module Chargen exposing (main)
 
 import Browser
+import Dict exposing (Dict, get)
 import Html exposing (Html, div, fieldset, h2, input, label, legend, pre, table, tbody, td, text, th, thead, tr)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
@@ -8,6 +9,7 @@ import Http
 import Json.Decode as Decode exposing (Decoder, int, string)
 import Json.Decode.Pipeline exposing (required)
 import Json.Encode as Encode
+import Maybe exposing (withDefault)
 import MultiSelect exposing (Item, multiSelect)
 
 
@@ -48,6 +50,17 @@ type alias FormData =
     , selectedClasses : List String
     }
 
+type alias Attributes = Dict String Int
+
+type alias Character =
+    { race : String
+    , cClass : String
+    , level : Int
+    , alignment : String
+    , attributes : Attributes
+    }
+
+
 
 showFormData : FormData -> String
 showFormData data =
@@ -77,14 +90,6 @@ allClasses =
 defaultFormData : FormData
 defaultFormData =
     { minLevel = 1, maxLevel = 20, selectedRaces = allRaces, selectedClasses = allClasses, count = 10 }
-
-
-type alias Character =
-    { race : String
-    , cClass : String
-    , level : Int
-    , alignment : String
-    }
 
 
 init : () -> ( Model, Cmd Msg )
@@ -265,11 +270,20 @@ characterListView characters =
     table [ class "pure-table pure-table-horizontal pure-table-striped" ]
         [ thead []
             [ tr []
-                [ th [] [ text "Race" ]
-                , th [] [ text "Class" ]
-                , th [] [ text "Level" ]
-                , th [] [ text "Alignment" ]
-                ]
+                (List.map
+                    (\header -> th [] [ text header ])
+                    [ "Race"
+                    , "Class"
+                    , "Level"
+                    , "Alignment"
+                    , "STR"
+                    , "DEX"
+                    , "CON"
+                    , "INT"
+                    , "WIS"
+                    , "CHA"
+                    ]
+                )
             ]
         , tbody []
             (List.map characterView characters)
@@ -279,11 +293,28 @@ characterListView characters =
 characterView : Character -> Html Msg
 characterView chr =
     tr []
-        [ td [] [ text chr.race ]
-        , td [] [ text chr.cClass ]
-        , td [] [ text <| String.fromInt chr.level ]
-        , td [] [ text chr.alignment ]
-        ]
+        ([ td [] [ text chr.race ]
+         , td [] [ text chr.cClass ]
+         , td [] [ text <| String.fromInt chr.level ]
+         , td [] [ text chr.alignment ]
+         ]
+            ++ characterAttributes chr.attributes
+        )
+
+
+characterAttributes : Attributes -> List (Html Msg)
+characterAttributes attributes =
+    List.map
+        (\att ->
+            td []
+                [ text <| String.fromInt <| getAttribute attributes att ]
+        )
+        [ "str", "dex", "con", "int", "wis", "cha" ]
+
+
+getAttribute : Attributes -> String -> Int
+getAttribute attributes name =
+    withDefault -1 <| get name attributes
 
 
 
@@ -310,6 +341,7 @@ characterDecoder =
         |> required "cClass" string
         |> required "level" int
         |> required "alignment" string
+        |> required "attributes" (Decode.dict int)
 
 
 formDataEncode : FormData -> Encode.Value
