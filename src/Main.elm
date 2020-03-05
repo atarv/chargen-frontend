@@ -57,6 +57,8 @@ type alias FormData =
 type alias Attributes =
     Dict String Int
 
+type alias SavingThrows =
+    Dict String Int
 
 type alias Character =
     { race : String
@@ -64,6 +66,7 @@ type alias Character =
     , level : Int
     , alignment : String
     , attributes : Attributes
+    , savingThrows : SavingThrows
     }
 
 
@@ -372,6 +375,11 @@ characterListView characters =
                     , "INT"
                     , "WIS"
                     , "CHA"
+                    , "Magic Items"
+                    , "Breath"
+                    , "Death"
+                    , "Petrification"
+                    , "Spells"
                     ]
                 )
             ]
@@ -388,12 +396,13 @@ characterView chr =
          , td [] [ text <| String.fromInt chr.level ]
          , td [] [ text chr.alignment ]
          ]
-            ++ characterAttributes chr.attributes
+            ++ attributesView chr.attributes
+            ++ savingThrowsView chr.savingThrows
         )
 
 
-characterAttributes : Attributes -> List (Html Msg)
-characterAttributes attributes =
+attributesView : Attributes -> List (Html Msg)
+attributesView attributes =
     List.map
         (\att ->
             td []
@@ -405,6 +414,15 @@ characterAttributes attributes =
 getAttribute : Attributes -> String -> Int
 getAttribute attributes name =
     withDefault -1 <| get name attributes
+
+savingThrowsView : SavingThrows -> List (Html Msg)
+savingThrowsView sthrs =
+    List.map
+        (\st ->
+            td []
+                [ text <| String.fromInt <| getAttribute sthrs st]
+        )
+        ["magicItems", "breath", "death", "petrify", "spells"]
 
 
 attributeGenChooser : String -> Html Msg
@@ -495,6 +513,7 @@ characterDecoder =
         |> required "level" int
         |> required "alignment" string
         |> required "attributes" (Decode.dict int)
+        |> required "savingThrows" (Decode.dict int)
 
 
 formDataEncode : FormData -> Encode.Value
