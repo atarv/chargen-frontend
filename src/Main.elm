@@ -50,7 +50,7 @@ type alias FormData =
     , count : Int
     , selectedRaces : Set String
     , selectedClasses : Set String
-    , attributeGen : Int
+    , attributeGen : String
     }
 
 
@@ -82,7 +82,7 @@ showFormData data =
         ++ String.concat
             (List.intersperse ", " <| Set.toList data.selectedClasses)
         ++ "\n, attributeGen = "
-        ++ String.fromInt data.attributeGen
+        ++ data.attributeGen
         ++ "\n}\n"
 
 
@@ -103,7 +103,7 @@ defaultFormData =
     , selectedRaces = allRaces
     , selectedClasses = possibleCharacterClasses allRaces
     , count = 10
-    , attributeGen = 0
+    , attributeGen = "Method4D6BestOf3"
     }
 
 
@@ -187,7 +187,7 @@ update msg model =
                 ChangeAttributeGen method ->
                     let
                         changeAttGen =
-                            \form -> { form | attributeGen = Maybe.withDefault 0 (String.toInt method) }
+                            \form -> { form | attributeGen = method }
                     in
                     ( Success { content | form = changeAttGen content.form }, Cmd.none )
 
@@ -407,7 +407,7 @@ getAttribute attributes name =
     withDefault -1 <| get name attributes
 
 
-attributeGenChooser : Int -> Html Msg
+attributeGenChooser : String -> Html Msg
 attributeGenChooser current =
     label []
         [ text "Attribute generation method"
@@ -417,8 +417,8 @@ attributeGenChooser current =
                     [ type_ "radio"
                     , id "3d6"
                     , name "attributeGen"
-                    , value "0"
-                    , checked (current == 0)
+                    , value "Method3D6"
+                    , checked (current == "Method3D6")
                     , onInput ChangeAttributeGen
                     ]
                     []
@@ -429,8 +429,8 @@ attributeGenChooser current =
                     [ type_ "radio"
                     , id "4d6bof3"
                     , name "attributeGen"
-                    , value "1"
-                    , checked (current == 1)
+                    , value "Method4D6BestOf3"
+                    , checked (current == "Method4D6BestOf3")
                     , onInput ChangeAttributeGen
                     ]
                     []
@@ -505,5 +505,5 @@ formDataEncode form =
         , ( "count", Encode.int form.count )
         , ( "selectedRaces", Encode.set Encode.string form.selectedRaces )
         , ( "selectedClasses", Encode.set Encode.string form.selectedClasses )
-        , ( "attributeGen", Encode.int form.attributeGen )
+        , ( "attributeGen", Encode.string form.attributeGen )
         ]
