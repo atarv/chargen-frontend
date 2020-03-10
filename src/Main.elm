@@ -35,7 +35,7 @@ main =
 
 type Model
     = Failure
-    | Success ModelContent
+    | MainModel ModelContent
 
 
 type alias ModelContent =
@@ -57,8 +57,10 @@ type alias FormData =
 type alias Attributes =
     Dict String Int
 
+
 type alias SavingThrows =
     Dict String Int
+
 
 type alias Character =
     { race : String
@@ -112,7 +114,7 @@ defaultFormData =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Success { form = defaultFormData, characters = [] }
+    ( MainModel { form = defaultFormData, characters = [] }
     , getRandomCharacters defaultFormData
     )
 
@@ -129,8 +131,8 @@ type Msg
     | ChangeMaxLevel String
     | ChangeMinLevel String
     | ChangeCount String
-    | GenerateCharacters FormData
-    | GenerateMoreCharacters FormData
+    | GenerateCharacters
+    | GenerateMoreCharacters
     | GotCharacters (Result Http.Error (List Character))
     | GotMoreCharacters (Result Http.Error (List Character))
 
@@ -138,25 +140,21 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case model of
-        Success content ->
+        MainModel ({ characters, form } as content) ->
             case msg of
                 Reset ->
                     init ()
 
-                GenerateCharacters form ->
+                GenerateCharacters ->
                     ( model, getRandomCharacters form )
 
-                GenerateMoreCharacters form ->
+                GenerateMoreCharacters ->
                     ( model, getMoreRandomCharacters form )
 
                 GotCharacters httpResult ->
                     case httpResult of
                         Ok newChars ->
-                            let
-                                changeChars =
-                                    \mod -> { mod | characters = newChars }
-                            in
-                            ( Success (changeChars content), Cmd.none )
+                            ( MainModel { content | characters = newChars }, Cmd.none )
 
                         Err _ ->
                             ( Failure, Cmd.none )
@@ -164,56 +162,33 @@ update msg model =
                 GotMoreCharacters httpResult ->
                     case httpResult of
                         Ok newChars ->
-                            let
-                                changeChars =
-                                    \mod -> { mod | characters = mod.characters ++ newChars }
-                            in
-                            ( Success (changeChars content), Cmd.none )
+                            ( MainModel { content | characters = characters ++ newChars }, Cmd.none )
 
                         Err _ ->
                             ( Failure, Cmd.none )
 
                 RaceSelectionChanged newRaces ->
-                    let
-                        changeRaces =
-                            \form -> { form | selectedRaces = Set.fromList newRaces }
-                    in
-                    ( Success { content | form = changeRaces content.form }, Cmd.none )
+                    ( MainModel
+                        { content
+                            | form = { form | selectedRaces = Set.fromList newRaces }
+                        }
+                    , Cmd.none
+                    )
 
                 ClassSelectionChanged newClasses ->
-                    let
-                        changeClasses =
-                            \form -> { form | selectedClasses = Set.fromList newClasses }
-                    in
-                    ( Success { content | form = changeClasses content.form }, Cmd.none )
+                    ( MainModel { content | form = { form | selectedClasses = Set.fromList newClasses } }, Cmd.none )
 
                 ChangeAttributeGen method ->
-                    let
-                        changeAttGen =
-                            \form -> { form | attributeGen = method }
-                    in
-                    ( Success { content | form = changeAttGen content.form }, Cmd.none )
+                    ( MainModel { content | form = { form | attributeGen = method } }, Cmd.none )
 
                 ChangeMinLevel lvl ->
-                    let
-                        changeLevel =
-                            \form -> { form | minLevel = Maybe.withDefault 1 (String.toInt lvl) }
-                    in
-                    ( Success { content | form = changeLevel content.form }, Cmd.none )
+                    ( MainModel { content | form = { form | minLevel = Maybe.withDefault 1 (String.toInt lvl) } }, Cmd.none )
 
                 ChangeMaxLevel lvl ->
-                    let
-                        changeLevel =
-                            \form -> { form | maxLevel = Maybe.withDefault 1 (String.toInt lvl) }
-                    in
-                    ( Success { content | form = changeLevel content.form }, Cmd.none )
+                    ( MainModel { content | form = { form | maxLevel = Maybe.withDefault 1 (String.toInt lvl) } }, Cmd.none )
 
                 ChangeCount c ->
-                    let
-                        changeCount =
-                            \form -> { form | count = Maybe.withDefault 1 (String.toInt c) }
-                    in
-                    ( Success { content | form = changeCount content.form }, Cmd.none )
+                    ( MainModel { content | form = { form | count = Maybe.withDefault 1 (String.toInt c) } }, Cmd.none )
 
         _ ->
             ( model, Cmd.none )
@@ -235,7 +210,7 @@ subscriptions _ =
 view : Model -> Html Msg
 view model =
     case model of
-        Success { form, characters } ->
+        MainModel { form, characters } ->
             div [ class "content" ]
                 [ h2 [ id "app-header" ] [ text "OSRIC Random Character Generator" ]
                 , formView form
@@ -244,7 +219,7 @@ view model =
                 , div [ class "centered" ]
                     [ Html.button
                         [ class "pure-button"
-                        , onClick <| GenerateMoreCharacters form
+                        , onClick <| GenerateMoreCharacters
                         , (disabled << not << List.isEmpty << validateForm) form
                         ]
                         [ text "Generate more"
@@ -304,7 +279,7 @@ formView form =
                     [ text errorMessage ]
                 , Html.button
                     [ class "pure-button"
-                    , onClick (GenerateCharacters form)
+                    , onClick GenerateCharacters
                     , type_ "button"
                     , disabled isInError
                     ]
@@ -415,14 +390,15 @@ getAttribute : Attributes -> String -> Int
 getAttribute attributes name =
     withDefault -1 <| get name attributes
 
+
 savingThrowsView : SavingThrows -> List (Html Msg)
 savingThrowsView sthrs =
     List.map
         (\st ->
             td []
-                [ text <| String.fromInt <| getAttribute sthrs st]
+                [ text <| String.fromInt <| getAttribute sthrs st ]
         )
-        ["magicItems", "breath", "death", "petrify", "spells"]
+        [ "magicItems", "breath", "death", "petrify", "spells" ]
 
 
 attributeGenChooser : String -> Html Msg
