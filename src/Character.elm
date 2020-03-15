@@ -44,12 +44,30 @@ type alias Character =
 
 allRaces : Set String
 allRaces =
-    Set.fromList [ "Dwarf", "Elf", "Gnome" ]
+    Set.fromList
+        [ "Dwarf"
+        , "Elf"
+        , "Gnome"
+        , "HalfElf"
+        , "Halfling"
+        , "HalfOrc"
+        , "Human"
+        ]
 
 
 allClasses : Set String
 allClasses =
-    Set.fromList [ "Assassin", "Cleric", "Druid", "Fighter" ]
+    Set.fromList
+        [ "Assassin"
+        , "Cleric"
+        , "Druid"
+        , "Fighter"
+        , "Illusionist"
+        , "MagicUser"
+        , "Paladin"
+        , "Ranger"
+        , "Thief"
+        ]
 
 
 getAttribute : Attributes -> String -> Int
@@ -62,9 +80,13 @@ raceAllowedClasses race =
     withDefault Set.empty <|
         Dict.get race <|
             Dict.fromList
-                [ ( "Dwarf", Set.fromList [ "Assassin", "Cleric", "Fighter" ] )
-                , ( "Elf", Set.fromList [ "Assassin", "Cleric", "Fighter" ] )
-                , ( "Gnome", Set.fromList [ "Assassin", "Cleric", "Fighter" ] )
+                [ ( "Dwarf", Set.fromList [ "Assassin", "Cleric", "Fighter", "Thief" ] )
+                , ( "Elf", Set.fromList [ "Assassin", "Cleric", "Fighter", "MagicUser", "Thief" ] )
+                , ( "Gnome", Set.fromList [ "Assassin", "Cleric", "Fighter", "Illusionist", "Thief" ] )
+                , ( "HalfElf", Set.fromList [ "Assassin", "Cleric", "Fighter", "MagicUser", "Ranger", "Thief" ] )
+                , ( "Halfling", Set.fromList [ "Fighter", "Druid", "Thief" ] )
+                , ( "HalfOrc", Set.fromList [ "Assassin", "Cleric", "Fighter", "Thief" ] )
+                , ( "Human", allClasses )
                 ]
 
 
