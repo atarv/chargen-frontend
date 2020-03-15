@@ -1,12 +1,12 @@
 module Chargen exposing (main)
 
 import Browser
-import Dict exposing (Dict, get)
+import Character exposing (..)
 import Html exposing (Html, div, fieldset, h2, input, label, legend, pre, table, tbody, td, text, th, thead, tr)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Http
-import Json.Decode as Decode exposing (Decoder, int, string)
+import Json.Decode as Decode exposing (int, string)
 import Json.Decode.Pipeline exposing (required)
 import Json.Encode as Encode
 import Maybe exposing (withDefault)
@@ -54,24 +54,6 @@ type alias FormData =
     }
 
 
-type alias Attributes =
-    Dict String Int
-
-
-type alias SavingThrows =
-    Dict String Int
-
-
-type alias Character =
-    { race : String
-    , cClass : String
-    , level : Int
-    , alignment : String
-    , attributes : Attributes
-    , savingThrows : SavingThrows
-    }
-
-
 showFormData : FormData -> String
 showFormData data =
     "FormData\n{ minLevel = "
@@ -89,16 +71,6 @@ showFormData data =
         ++ "\n, attributeGen = "
         ++ data.attributeGen
         ++ "\n}\n"
-
-
-allRaces : Set String
-allRaces =
-    Set.fromList [ "Dwarf", "Elf", "Gnome" ]
-
-
-allClasses : Set String
-allClasses =
-    Set.fromList [ "Assassin", "Cleric", "Druid", "Fighter" ]
 
 
 defaultFormData : FormData
@@ -297,25 +269,6 @@ optionsFromSet allOptions allowedValues =
         Set.toList allOptions
 
 
-possibleCharacterClasses : Set String -> Set String
-possibleCharacterClasses selectedRaces =
-    Set.foldl
-        (\r cls -> Set.union cls <| raceAllowedClasses r)
-        Set.empty
-        selectedRaces
-
-
-raceAllowedClasses : String -> Set String
-raceAllowedClasses race =
-    withDefault Set.empty <|
-        Dict.get race <|
-            Dict.fromList
-                [ ( "Dwarf", Set.fromList [ "Assassin", "Cleric", "Fighter" ] )
-                , ( "Elf", Set.fromList [ "Assassin", "Cleric", "Fighter" ] )
-                , ( "Gnome", Set.fromList [ "Assassin", "Cleric", "Fighter" ] )
-                ]
-
-
 levelNumber : String -> Int -> Int -> Int -> (String -> Msg) -> Html Msg
 levelNumber txt val min max action =
     label []
@@ -384,11 +337,6 @@ attributesView attributes =
                 [ text <| String.fromInt <| getAttribute attributes att ]
         )
         [ "str", "dex", "con", "int", "wis", "cha" ]
-
-
-getAttribute : Attributes -> String -> Int
-getAttribute attributes name =
-    withDefault -1 <| get name attributes
 
 
 savingThrowsView : SavingThrows -> List (Html Msg)
@@ -479,17 +427,6 @@ getMoreRandomCharacters form =
 
 
 -- JSON Decoders
-
-
-characterDecoder : Decoder Character
-characterDecoder =
-    Decode.succeed Character
-        |> required "race" string
-        |> required "cClass" string
-        |> required "level" int
-        |> required "alignment" string
-        |> required "attributes" (Decode.dict int)
-        |> required "savingThrows" (Decode.dict int)
 
 
 formDataEncode : FormData -> Encode.Value
