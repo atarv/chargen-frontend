@@ -6,7 +6,7 @@ module Character exposing
     , allRaces
     , characterDecoder
     , getAttribute
-    , possibleCharacterClasses
+    , allowedClassesForRaces
     )
 
 import Dict exposing (Dict, get)
@@ -90,8 +90,8 @@ raceAllowedClasses race =
                 ]
 
 
-possibleCharacterClasses : Set String -> Set String
-possibleCharacterClasses selectedRaces =
+allowedClassesForRaces : Set String -> Set String
+allowedClassesForRaces selectedRaces =
     Set.foldl
         (\r cls -> Set.union cls <| raceAllowedClasses r)
         Set.empty

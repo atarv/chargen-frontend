@@ -2,7 +2,7 @@ module Chargen exposing (main)
 
 import Browser
 import Character exposing (..)
-import Html exposing (Html, div, fieldset, h2, input, label, legend, pre, table, tbody, td, text, th, thead, tr)
+import Html exposing (Html, div, fieldset, h2, input, label, pre, table, tbody, td, text, th, thead, tr)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Http
@@ -34,13 +34,13 @@ main =
 
 
 type Model
-    = Failure
-    | MainModel ModelContent
+    = MainModel ModelContent
 
 
 type alias ModelContent =
     { form : FormData
     , characters : List Character
+    , errorMessage : Maybe String
     }
 
 
@@ -78,7 +78,7 @@ defaultFormData =
     { minLevel = 1
     , maxLevel = 20
     , selectedRaces = allRaces
-    , selectedClasses = possibleCharacterClasses allRaces
+    , selectedClasses = allowedClassesForRaces allRaces
     , count = 10
     , attributeGen = "Method4D6BestOf3"
     }
@@ -86,7 +86,7 @@ defaultFormData =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( MainModel { form = defaultFormData, characters = [] }
+    ( MainModel { form = defaultFormData, characters = [], errorMessage = Nothing }
     , getRandomCharacters defaultFormData
     )
 
@@ -126,18 +126,18 @@ update msg model =
                 GotCharacters httpResult ->
                     case httpResult of
                         Ok newChars ->
-                            ( MainModel { content | characters = newChars }, Cmd.none )
+                            ( MainModel { content | characters = newChars, errorMessage = Nothing }, Cmd.none )
 
-                        Err _ ->
-                            ( Failure, Cmd.none )
+                        Err e ->
+                            ( MainModel { content | errorMessage = Just <| errorMessageFrom e }, Cmd.none )
 
                 GotMoreCharacters httpResult ->
                     case httpResult of
                         Ok newChars ->
-                            ( MainModel { content | characters = characters ++ newChars }, Cmd.none )
+                            ( MainModel { content | characters = characters ++ newChars, errorMessage = Nothing }, Cmd.none )
 
-                        Err _ ->
-                            ( Failure, Cmd.none )
+                        Err e ->
+                            ( MainModel { content | errorMessage = Just <| errorMessageFrom e }, Cmd.none )
 
                 RaceSelectionChanged newRaces ->
                     ( MainModel
@@ -162,8 +162,24 @@ update msg model =
                 ChangeCount c ->
                     ( MainModel { content | form = { form | count = Maybe.withDefault 1 (String.toInt c) } }, Cmd.none )
 
+
+errorMessageFrom : Http.Error -> String
+errorMessageFrom err =
+    case err of
+        Http.BadStatus code ->
+            String.fromInt code
+
+        Http.BadUrl url ->
+            "Bad URL: " ++ url
+
+        Http.NetworkError ->
+            "Network error"
+
+        Http.Timeout ->
+            "Request timed out"
+
         _ ->
-            ( model, Cmd.none )
+            "Undefined error"
 
 
 
@@ -182,10 +198,11 @@ subscriptions _ =
 view : Model -> Html Msg
 view model =
     case model of
-        MainModel { form, characters } ->
+        MainModel { form, characters, errorMessage } ->
             div [ class "content" ]
                 [ h2 [ id "app-header" ] [ text "OSRIC Random Character Generator" ]
                 , formView form
+                , errorMessageView (isJust errorMessage) ("Well, that was a bad roll: " ++ Maybe.withDefault "" errorMessage)
                 , pre [] [ text (showFormData form) ] -- DEBUG:
                 , div [] [ characterListView characters ]
                 , div [ class "centered" ]
@@ -199,8 +216,20 @@ view model =
                     ]
                 ]
 
-        _ ->
-            div [] [ text "unhandled" ]
+
+isJust : Maybe a -> Bool
+isJust a =
+    case a of
+        Just _ ->
+            True
+
+        Nothing ->
+            False
+
+
+errorMessageView : Bool -> String -> Html msg
+errorMessageView isVisible message =
+    div [ class "error-message", (not >> hidden) isVisible ] [ text message ]
 
 
 formView : FormData -> Html Msg
@@ -214,10 +243,9 @@ formView form =
     in
     Html.form [ class "pure-form pure-form-stacked" ]
         [ fieldset []
-            [ legend [] [ text "Character generation constraints" ]
-            , div [ class "pure-g" ]
+            [ div [ class "pure-g" ]
                 -- Add grid class for every form field
-                (List.map (\x -> div [ class "pure-u-1 pure-u-md-1-4" ] [ x ])
+                (List.map (\x -> div [ class "pure-u-1 pure-u-md-1-5" ] [ x ])
                     [ levelNumber "Min level" form.minLevel 1 form.maxLevel ChangeMinLevel
                     , levelNumber "Max level" form.maxLevel form.minLevel 100 ChangeMaxLevel
                     , label []
@@ -235,7 +263,7 @@ formView form =
                         , multiSelect
                             { items =
                                 optionsFromSet allClasses <|
-                                    possibleCharacterClasses form.selectedRaces
+                                    allowedClassesForRaces form.selectedRaces
                             , onChange = ClassSelectionChanged
                             }
                             [ class "pure-u-4-5", Html.Attributes.required True ]
@@ -247,8 +275,7 @@ formView form =
                     ]
                 )
             , div [ class "centered" ]
-                [ div [ class "error-message", hidden (not isInError) ]
-                    [ text errorMessage ]
+                [ errorMessageView isInError errorMessage
                 , Html.button
                     [ class "pure-button"
                     , onClick GenerateCharacters
