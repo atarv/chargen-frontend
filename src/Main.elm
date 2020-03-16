@@ -10,6 +10,7 @@ import Json.Decode as Decode exposing (int, string)
 import Json.Decode.Pipeline exposing (required)
 import Json.Encode as Encode
 import Maybe exposing (withDefault)
+import Maybe.Extra exposing (isJust)
 import MultiSelect exposing (Item, multiSelect)
 import Set as Set exposing (Set)
 import Tuple exposing (second)
@@ -86,7 +87,11 @@ defaultFormData =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( MainModel { form = defaultFormData, characters = [], errorMessage = Nothing }
+    ( MainModel
+        { form = defaultFormData
+        , characters = []
+        , errorMessage = Nothing
+        }
     , getRandomCharacters defaultFormData
     )
 
@@ -150,7 +155,15 @@ update msg model =
                 RaceSelectionChanged newRaces ->
                     ( MainModel
                         { content
-                            | form = { form | selectedRaces = Set.fromList newRaces }
+                            | form =
+                                { form
+                                    | selectedRaces = Set.fromList newRaces
+                                    , selectedClasses =
+                                        -- Remove classes not allowed for selected races
+                                        Set.intersect form.selectedClasses <|
+                                            allowedClassesForRaces <|
+                                                Set.fromList newRaces
+                                }
                         }
                     , Cmd.none
                     )
@@ -233,16 +246,6 @@ view model =
                         ]
                     ]
                 ]
-
-
-isJust : Maybe a -> Bool
-isJust a =
-    case a of
-        Just _ ->
-            True
-
-        Nothing ->
-            False
 
 
 errorMessageView : Bool -> String -> Html msg
