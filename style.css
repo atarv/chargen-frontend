@@ -32,3 +32,8 @@
     text-align: center;
     margin: auto;
 }
+
+select {
+    height: 100%;
+    overflow: hidden;
+}

@@ -126,18 +126,26 @@ update msg model =
                 GotCharacters httpResult ->
                     case httpResult of
                         Ok newChars ->
-                            ( MainModel { content | characters = newChars, errorMessage = Nothing }, Cmd.none )
+                            ( MainModel { content | characters = newChars, errorMessage = Nothing }
+                            , Cmd.none
+                            )
 
                         Err e ->
-                            ( MainModel { content | errorMessage = Just <| errorMessageFrom e }, Cmd.none )
+                            ( MainModel { content | errorMessage = Just <| errorMessageFrom e }
+                            , Cmd.none
+                            )
 
                 GotMoreCharacters httpResult ->
                     case httpResult of
                         Ok newChars ->
-                            ( MainModel { content | characters = characters ++ newChars, errorMessage = Nothing }, Cmd.none )
+                            ( MainModel { content | characters = characters ++ newChars, errorMessage = Nothing }
+                            , Cmd.none
+                            )
 
                         Err e ->
-                            ( MainModel { content | errorMessage = Just <| errorMessageFrom e }, Cmd.none )
+                            ( MainModel { content | errorMessage = Just <| errorMessageFrom e }
+                            , Cmd.none
+                            )
 
                 RaceSelectionChanged newRaces ->
                     ( MainModel
@@ -148,19 +156,29 @@ update msg model =
                     )
 
                 ClassSelectionChanged newClasses ->
-                    ( MainModel { content | form = { form | selectedClasses = Set.fromList newClasses } }, Cmd.none )
+                    ( MainModel { content | form = { form | selectedClasses = Set.fromList newClasses } }
+                    , Cmd.none
+                    )
 
                 ChangeAttributeGen method ->
-                    ( MainModel { content | form = { form | attributeGen = method } }, Cmd.none )
+                    ( MainModel { content | form = { form | attributeGen = method } }
+                    , Cmd.none
+                    )
 
                 ChangeMinLevel lvl ->
-                    ( MainModel { content | form = { form | minLevel = Maybe.withDefault 1 (String.toInt lvl) } }, Cmd.none )
+                    ( MainModel { content | form = { form | minLevel = Maybe.withDefault 1 (String.toInt lvl) } }
+                    , Cmd.none
+                    )
 
                 ChangeMaxLevel lvl ->
-                    ( MainModel { content | form = { form | maxLevel = Maybe.withDefault 1 (String.toInt lvl) } }, Cmd.none )
+                    ( MainModel { content | form = { form | maxLevel = Maybe.withDefault 1 (String.toInt lvl) } }
+                    , Cmd.none
+                    )
 
                 ChangeCount c ->
-                    ( MainModel { content | form = { form | count = Maybe.withDefault 1 (String.toInt c) } }, Cmd.none )
+                    ( MainModel { content | form = { form | count = Maybe.withDefault 1 (String.toInt c) } }
+                    , Cmd.none
+                    )
 
 
 errorMessageFrom : Http.Error -> String
@@ -245,20 +263,28 @@ formView form =
         [ fieldset []
             [ div [ class "pure-g" ]
                 -- Add grid class for every form field
-                (List.map (\x -> div [ class "pure-u-1 pure-u-md-1-5" ] [ x ])
+                [ div [ class "pure-u-1 pure-u-md-1-5" ]
                     [ levelNumber "Min level" form.minLevel 1 form.maxLevel ChangeMinLevel
                     , levelNumber "Max level" form.maxLevel form.minLevel 100 ChangeMaxLevel
-                    , label []
+                    , levelNumber "Character count" form.count 1 100 ChangeCount
+                    ]
+                , div [ class "pure-u-1 pure-u-md-1-5" ]
+                    [ label []
                         [ text "Races"
                         , multiSelect
                             { items = optionsFromSet allRaces allRaces
                             , onChange = RaceSelectionChanged
                             }
-                            [ class "pure-u-4-5", Html.Attributes.required True ]
+                            [ class "pure-u-4-5"
+                            , Html.Attributes.required True
+                            , Html.Attributes.size <| Set.size allRaces
+                            ]
                           <|
                             Set.toList form.selectedRaces
                         ]
-                    , label []
+                    ]
+                , div [ class "pure-u-1 pure-u-md-1-5" ]
+                    [ label []
                         [ text "Classes"
                         , multiSelect
                             { items =
@@ -266,14 +292,17 @@ formView form =
                                     allowedClassesForRaces form.selectedRaces
                             , onChange = ClassSelectionChanged
                             }
-                            [ class "pure-u-4-5", Html.Attributes.required True ]
+                            [ class "pure-u-4-5"
+                            , Html.Attributes.required True
+                            , Html.Attributes.size <| Set.size allClasses
+                            ]
                           <|
                             Set.toList form.selectedClasses
                         ]
-                    , levelNumber "Character count" form.count 1 100 ChangeCount
-                    , attributeGenChooser form.attributeGen
                     ]
-                )
+                , div [ class "pure-u-1 pure-u-md-1-5" ]
+                    [ attributeGenChooser form.attributeGen ]
+                ]
             , div [ class "centered" ]
                 [ errorMessageView isInError errorMessage
                 , Html.button
