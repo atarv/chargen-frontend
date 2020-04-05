@@ -2,7 +2,7 @@ module Chargen exposing (main)
 
 import Browser
 import Character exposing (..)
-import Html exposing (Html, div, fieldset, h2, input, label, pre, table, tbody, td, text, th, thead, tr)
+import Html exposing (Html, div, fieldset, h2, input, label, table, tbody, td, text, th, thead, tr)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Http
@@ -53,25 +53,6 @@ type alias FormData =
     , selectedClasses : Set String
     , attributeGen : String
     }
-
-
-showFormData : FormData -> String
-showFormData data =
-    "FormData\n{ minLevel = "
-        ++ String.fromInt data.minLevel
-        ++ "\n, maxLevel = "
-        ++ String.fromInt data.maxLevel
-        ++ "\n, count = "
-        ++ String.fromInt data.count
-        ++ "\n, selectedRaces = "
-        ++ String.concat
-            (List.intersperse ", " <| Set.toList data.selectedRaces)
-        ++ "\n, selectedClasses = "
-        ++ String.concat
-            (List.intersperse ", " <| Set.toList data.selectedClasses)
-        ++ "\n, attributeGen = "
-        ++ data.attributeGen
-        ++ "\n}\n"
 
 
 defaultFormData : FormData
@@ -230,11 +211,12 @@ view : Model -> Html Msg
 view model =
     case model of
         MainModel { form, characters, errorMessage } ->
-            div [ class "content" ]
-                [ h2 [ id "app-header" ] [ text "OSRIC Random Character Generator" ]
-                , formView form
-                , errorMessageView (isJust errorMessage) ("Well, that was a bad roll: " ++ Maybe.withDefault "" errorMessage)
-                , pre [] [ text (showFormData form) ] -- DEBUG:
+            div []
+                [ div [ class "form" ]
+                    [ h2 [ id "app-header" ] [ text "OSRIC Random Character Generator" ]
+                    , formView form
+                    , errorMessageView (isJust errorMessage) ("Well, that was a bad roll: " ++ Maybe.withDefault "" errorMessage)
+                    ]
                 , div [] [ characterListView characters ]
                 , div [ class "centered" ]
                     [ Html.button
@@ -250,7 +232,11 @@ view model =
 
 errorMessageView : Bool -> String -> Html msg
 errorMessageView isVisible message =
-    div [ class "error-message", (not >> hidden) isVisible ] [ text message ]
+    if isVisible then
+        div [ class "error-message" ] [ text message ]
+
+    else
+        text ""
 
 
 formView : FormData -> Html Msg
@@ -347,65 +333,87 @@ levelNumber txt val min max action =
 
 characterListView : List Character -> Html Msg
 characterListView characters =
-    table [ class "pure-table pure-table-horizontal pure-table-striped" ]
-        [ thead []
-            [ tr []
-                (List.map
-                    (\header -> th [] [ text header ])
-                    [ "Race"
-                    , "Class"
-                    , "Level"
-                    , "Alignment"
-                    , "STR"
-                    , "DEX"
-                    , "CON"
-                    , "INT"
-                    , "WIS"
-                    , "CHA"
-                    , "Magic Items"
-                    , "Breath"
-                    , "Death"
-                    , "Petrification"
-                    , "Spells"
-                    ]
-                )
-            ]
-        , tbody []
-            (List.map characterView characters)
-        ]
+    div [ class "characters-container" ] (List.map characterView characters)
 
 
 characterView : Character -> Html Msg
 characterView chr =
-    tr []
-        ([ td [] [ text chr.race ]
-         , td [] [ text chr.cClass ]
-         , td [] [ text <| String.fromInt chr.level ]
-         , td [] [ text chr.alignment ]
-         ]
-            ++ attributesView chr.attributes
-            ++ savingThrowsView chr.savingThrows
-        )
+    div [ class "character" ]
+        [ div [ class "pure-g" ] <|
+            List.map
+                (\content -> div [ class "pure-u-1-2" ] content)
+                [ [ label [] [ text "Race: " ]
+                  , text chr.race
+                  ]
+                , [ label [] [ text "Class: " ]
+                  , text chr.cClass
+                  ]
+                , [ label [] [ text "Level: " ]
+                  , text <| String.fromInt chr.level
+                  ]
+                , [ label [] [ text "Alignment: " ]
+                  , text chr.alignment
+                  ]
+                ]
+                ++ List.map
+                    (\content -> div [ class "pure-u-1-1 l-box" ] [ content ])
+                    [ attributesView chr.attributes
+                    , savingThrowsView chr.savingThrows
+                    ]
+        ]
 
 
-attributesView : Attributes -> List (Html Msg)
+
+-- , div [ class "pure-u-1-1" ] [ attributesView chr.attributes ]
+-- , div [ class "pure-u-1-1" ] [ savingThrowsView chr.savingThrows ]
+
+
+attributesView : Attributes -> Html Msg
 attributesView attributes =
-    List.map
-        (\att ->
-            td []
-                [ text <| String.fromInt <| getAttribute attributes att ]
-        )
-        [ "str", "dex", "con", "int", "wis", "cha" ]
+    let
+        attrNames =
+            [ "str", "dex", "con", "int", "wis", "cha" ]
+    in
+    table [ class "pure-table" ]
+        [ thead [] [ tr [] (List.map (\h -> th [] [ text <| String.toUpper h ]) attrNames) ]
+        , tbody []
+            [ tr []
+                (List.map
+                    (\att ->
+                        td []
+                            [ text <| String.fromInt <| getAttribute attributes att ]
+                    )
+                    attrNames
+                )
+            ]
+        ]
 
 
-savingThrowsView : SavingThrows -> List (Html Msg)
+savingThrowsView : SavingThrows -> Html Msg
 savingThrowsView sthrs =
-    List.map
-        (\st ->
-            td []
-                [ text <| String.fromInt <| getAttribute sthrs st ]
-        )
-        [ "magicItems", "breath", "death", "petrify", "spells" ]
+    let
+        stFields =
+            [ "magicItems", "breath", "death", "petrify", "spells" ]
+
+        stNames =
+            [ "Magic items", "Breath", "Death", "Petrify", "Spells" ]
+    in
+    table [ class "pure-table" ]
+        [ thead []
+            [ tr []
+                (List.map (\h -> th [] [ text h ]) stNames)
+            ]
+        , tbody []
+            [ tr []
+                (List.map
+                    (\st ->
+                        td []
+                            [ text <| String.fromInt <| getAttribute sthrs st ]
+                    )
+                    stFields
+                )
+            ]
+        ]
 
 
 attributeGenChooser : String -> Html Msg

@@ -1,14 +1,36 @@
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: medium;
+    padding: 0.1em 0.4em;
+}
+
 #app-header {
     font-family: monospace;
     text-align: center;
 }
 
-.content {
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: medium;
+.characters-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.character {
+    /* min-width: 35em; */
+    max-width: 30em;
+    margin: 1em;
+    padding: 0.2em 1em 0.2em 1em;
+    border-left: 4px double slategray;
+    border-right: 4px double slategray;
+    border-radius: 12px;
+}
+
+.form {
     max-width: 60em;
     margin: 1em auto;
-    padding: 0.1em 0.4em;
     justify-content: center;
 }
 
@@ -31,6 +53,16 @@
     margin: 1em;
     text-align: center;
     margin: auto;
+}
+
+.pure-g > div {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.l-box {
+    padding: 0.5em 0;
 }
 
 select {
