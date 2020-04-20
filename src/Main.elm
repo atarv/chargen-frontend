@@ -16,7 +16,7 @@ import Set as Set exposing (Set)
 import Tuple exposing (second)
 
 baseUrl : String
-baseUrl = "http://localhost:8080"
+baseUrl = "https://chargen-api-5d4nndwdsq-lz.a.run.app"
 
 
 -- MAIN
