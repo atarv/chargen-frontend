@@ -15,6 +15,8 @@ import MultiSelect exposing (Item, multiSelect)
 import Set as Set exposing (Set)
 import Tuple exposing (second)
 
+baseUrl : String
+baseUrl = "http://localhost:8080"
 
 
 -- MAIN
@@ -477,7 +479,7 @@ validateForm data =
 getRandomCharacters : FormData -> Cmd Msg
 getRandomCharacters form =
     Http.post
-        { url = "http://localhost:8080/character"
+        { url = baseUrl ++ "/character"
         , body = Http.jsonBody <| formDataEncode form
         , expect = Http.expectJson GotCharacters (Decode.list characterDecoder)
         }
@@ -486,7 +488,7 @@ getRandomCharacters form =
 getMoreRandomCharacters : FormData -> Cmd Msg
 getMoreRandomCharacters form =
     Http.post
-        { url = "http://localhost:8080/character"
+        { url = baseUrl ++ "/character"
         , body = Http.jsonBody <| formDataEncode form
         , expect = Http.expectJson GotMoreCharacters (Decode.list characterDecoder)
         }
