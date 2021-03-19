@@ -6,8 +6,7 @@ import Html exposing (Html, div, fieldset, h2, input, label, table, tbody, td, t
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Http
-import Json.Decode as Decode exposing (int, string)
-import Json.Decode.Pipeline exposing (required)
+import Json.Decode as Decode
 import Json.Encode as Encode
 import Maybe exposing (withDefault)
 import Maybe.Extra exposing (isJust)
@@ -15,8 +14,12 @@ import MultiSelect exposing (Item, multiSelect)
 import Set as Set exposing (Set)
 import Tuple exposing (second)
 
+
 baseUrl : String
-baseUrl = "http://localhost:8080"
+baseUrl =
+    -- You may want to change this
+    "http://localhost:8080"
+
 
 
 -- MAIN
@@ -223,7 +226,7 @@ view model =
                 , div [ class "centered" ]
                     [ Html.button
                         [ class "pure-button"
-                        , onClick <| GenerateMoreCharacters
+                        , onClick GenerateMoreCharacters
                         , (disabled << not << List.isEmpty << validateForm) form
                         ]
                         [ text "Generate more"
@@ -244,6 +247,12 @@ errorMessageView isVisible message =
 formView : FormData -> Html Msg
 formView form =
     let
+        maxLevel =
+            100
+
+        maxCount =
+            100
+
         isInError =
             (not << List.isEmpty << validateForm) form
 
@@ -252,12 +261,12 @@ formView form =
     in
     Html.form [ class "pure-form pure-form-stacked" ]
         [ fieldset []
-            [ div [ class "pure-g" ]
+            [ div [ class "pure-g justify-center" ]
                 -- Add grid class for every form field
                 [ div [ class "pure-u-1 pure-u-md-1-5" ]
                     [ levelNumber "Min level" form.minLevel 1 form.maxLevel ChangeMinLevel
-                    , levelNumber "Max level" form.maxLevel form.minLevel 100 ChangeMaxLevel
-                    , levelNumber "Character count" form.count 1 100 ChangeCount
+                    , levelNumber "Max level" form.maxLevel form.minLevel maxLevel ChangeMaxLevel
+                    , levelNumber "Character count" form.count 1 maxCount ChangeCount
                     ]
                 , div [ class "pure-u-1 pure-u-md-1-5" ]
                     [ label []
@@ -340,34 +349,30 @@ characterListView characters =
 
 characterView : Character -> Html Msg
 characterView chr =
-    div [ class "character" ]
-        [ div [ class "pure-g" ] <|
+    let
+        charInfo =
             List.map
                 (\content -> div [ class "pure-u-1-2" ] content)
-                [ [ label [] [ text "Race: " ]
-                  , text chr.race
-                  ]
-                , [ label [] [ text "Class: " ]
-                  , text chr.cClass
-                  ]
-                , [ label [] [ text "Level: " ]
-                  , text <| String.fromInt chr.level
-                  ]
-                , [ label [] [ text "Alignment: " ]
-                  , text chr.alignment
-                  ]
-                ]
-                ++ List.map
-                    (\content -> div [ class "pure-u-1-1 l-box" ] [ content ])
-                    [ attributesView chr.attributes
-                    , savingThrowsView chr.savingThrows
+            <|
+                List.map (\( field, val ) -> [ label [] [ text <| field ++ ": " ], text val ])
+                    [ ( "Race", chr.race )
+                    , ( "Class", chr.cClass )
+                    , ( "Level", String.fromInt chr.level )
+                    , ( "Alignment", chr.alignment )
                     ]
+
+        charStats =
+            List.map
+                (\content -> div [ class "pure-u-1-1 l-box" ] [ content ])
+                [ attributesView chr.attributes
+                , savingThrowsView chr.savingThrows
+                ]
+    in
+    div [ class "character" ]
+        [ div [ class "pure-g" ] <|
+            charInfo
+                ++ charStats
         ]
-
-
-
--- , div [ class "pure-u-1-1" ] [ attributesView chr.attributes ]
--- , div [ class "pure-u-1-1" ] [ savingThrowsView chr.savingThrows ]
 
 
 attributesView : Attributes -> Html Msg
@@ -376,7 +381,7 @@ attributesView attributes =
         attrNames =
             [ "str", "dex", "con", "int", "wis", "cha" ]
     in
-    table [ class "pure-table" ]
+    table [ class "pure-table full-width" ]
         [ thead [] [ tr [] (List.map (\h -> th [] [ text <| String.toUpper h ]) attrNames) ]
         , tbody []
             [ tr []
@@ -400,7 +405,7 @@ savingThrowsView sthrs =
         stNames =
             [ "Magic items", "Breath", "Death", "Petrify", "Spells" ]
     in
-    table [ class "pure-table" ]
+    table [ class "pure-table full-width" ]
         [ thead []
             [ tr []
                 (List.map (\h -> th [] [ text h ]) stNames)
@@ -451,10 +456,11 @@ attributeGenChooser current =
         ]
 
 
-{-| Returns `Nothing`, if form is valid, otherwise an error message is returned.
--}
 validateForm : FormData -> List String
 validateForm data =
+    {- | Returns a list of error messages, if the form isn't valid. If list is
+       empty, for is valid.
+    -}
     List.map second <|
         List.filter (\( b, _ ) -> b)
             [ ( Set.isEmpty data.selectedRaces

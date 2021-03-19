@@ -19,7 +19,6 @@ body {
 }
 
 .character {
-    /* min-width: 35em; */
     max-width: 30em;
     margin: 1em;
     padding: 0.2em 1em 0.2em 1em;
@@ -63,6 +62,18 @@ body {
 
 .l-box {
     padding: 0.5em 0;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
+td, th {
+    text-align: center;
 }
 
 select {
